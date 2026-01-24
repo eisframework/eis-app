@@ -159,11 +159,16 @@ laju-elysia/
 │   │   ├── dashboard.svelte
 │   │   ├── home.svelte
 │   │   └── profile.svelte
-│   └── styles/           # Global styles
-│       └── app.css
+│   └── entry/            # Frontend entry point
+│       ├── app.ts
+│       ├── index.ts
+│       └── style.css
+├── data/                 # Database files
+├── dist/                 # Production build output
 ├── docs/                 # Documentation
-├── tests/                # Test files
 ├── public/               # Static assets
+├── storage/              # File storage
+├── tests/                # Test files
 └── types/                # TypeScript definitions
 ```
 
