@@ -2,11 +2,10 @@ import { Elysia } from 'elysia'
 import { staticPlugin } from '@elysiajs/static'
 import { routes } from './routes'
 import inertia from './services/inertia.service'
-import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
+import { join } from 'path'
 import { networkInterfaces } from 'os'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const __dirname = import.meta.dir
 
 const getNetworkAddress = () => {
   const nets = networkInterfaces()
@@ -24,6 +23,10 @@ export const app = new Elysia()
   .use(staticPlugin({
     assets: join(__dirname, '../public'),
     prefix: '/public'
+  })) 
+  .use(staticPlugin({
+    assets: join(__dirname, '../storage'),
+    prefix: '/storage'
   })) 
   .use(staticPlugin({
     assets: join(__dirname, '../dist/assets'),

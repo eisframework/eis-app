@@ -1,4 +1,4 @@
-import type { AuthUser } from '../backend/middleware/auth'
+import type { AuthUser } from '../backend/middleware/auth.middleware'
 
 // Common types
 export interface CookieStore {
@@ -35,6 +35,7 @@ export interface ControllerContext {
   }
   cookie?: Record<string, any>
   inertia: InertiaHandler
+  request: Request
 }
 
 // Helper to create ResponseSet from Elysia context

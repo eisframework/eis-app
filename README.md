@@ -10,6 +10,7 @@ A modern full-stack framework combining Elysia, Svelte, and Inertia.js for build
 - **Inertia.js** - SPA-like experience without building a separate API
 - **Server-Side Rendering** - SEO-friendly with Eta template engine
 - **Authentication** - Built-in auth system with middleware
+- **File Upload** - Support for local and S3 storage with image processing
 - **Database** - SQLite with Drizzle ORM and migrations
 - **Testing** - Vitest with coverage support
 - **TailwindCSS** - Utility-first CSS framework
@@ -22,6 +23,8 @@ A modern full-stack framework combining Elysia, Svelte, and Inertia.js for build
 - **Drizzle ORM** - Type-safe SQL toolkit
 - **SQLite** - Lightweight database
 - **Eta** - Fast, lightweight template engine
+- **bun-image-turbo** - Fast Rust-powered image processing
+- **AWS SDK v3** - S3 storage support
 - **TypeScript** - Type-safe development
 
 ### Frontend
@@ -123,6 +126,7 @@ laju-elysia/
 │   │   ├── auth.controller.ts
 │   │   ├── dashboard.controller.ts
 │   │   ├── public.controller.ts
+│   │   ├── upload.controller.ts
 │   │   └── users.controller.ts
 │   ├── database/           # Database setup
 │   │   ├── migrations/
@@ -135,6 +139,9 @@ laju-elysia/
 │   │   └── response.ts
 │   ├── middleware/         # Route middleware
 │   │   └── auth.middleware.ts
+│   ├── services/           # Business logic services
+│   │   ├── s3.service.ts
+│   │   └── storage.service.ts
 │   ├── app.ts             # Main Elysia app
 │   └── index.ts           # Backend entry point
 ├── frontend/              # Svelte frontend
@@ -180,6 +187,18 @@ DB_PATH=./database.sqlite
 # Server
 PORT=3000
 HOST=localhost
+
+# Storage (Local)
+LOCAL_STORAGE_PATH=./storage
+LOCAL_STORAGE_PUBLIC_URL=/storage
+
+# Storage (S3/Wasabi)
+WASABI_ENDPOINT=https://s3.wasabisys.com
+WASABI_REGION=us-east-1
+WASABI_BUCKET=your-bucket-name
+WASABI_ACCESS_KEY=your-access-key
+WASABI_SECRET_KEY=your-secret-key
+CDN_URL=https://cdn.example.com
 ```
 
 ## Available Scripts
@@ -275,6 +294,45 @@ bun run build
 # Preview the production build
 bun run preview
 ```
+
+## File Upload
+
+The project supports file uploads with two storage options:
+
+### Local Storage
+
+For development, use local file storage:
+
+```typescript
+import { uploadBuffer, getPublicUrl } from '../services/storage.service'
+```
+
+### S3 Storage
+
+For production, use S3-compatible storage (AWS S3, Wasabi, etc.):
+
+```typescript
+import { uploadBuffer, getPublicUrl } from '../services/s3.service'
+```
+
+### Upload Routes
+
+- `POST /upload/image` - Upload images with automatic WebP conversion and resizing
+- `POST /upload/file` - Upload files (PDF, Word, Excel, etc.)
+- `DELETE /upload/:id` - Delete uploaded assets
+
+### Environment Variables
+
+Configure storage via environment variables:
+
+- `LOCAL_STORAGE_PATH` - Local storage directory (default: `./storage`)
+- `LOCAL_STORAGE_PUBLIC_URL` - Public URL prefix (default: `/storage`)
+- `WASABI_ENDPOINT` - S3 endpoint URL
+- `WASABI_REGION` - S3 region
+- `WASABI_BUCKET` - S3 bucket name
+- `WASABI_ACCESS_KEY` - S3 access key
+- `WASABI_SECRET_KEY` - S3 secret key
+- `CDN_URL` - Optional CDN URL for public assets
 
 ## Documentation
 

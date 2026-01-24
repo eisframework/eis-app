@@ -25,3 +25,20 @@ export const sessions = sqliteTable('sessions', {
     .notNull()
     .default(sql`(unixepoch())`)
 })
+
+export const assets = sqliteTable('assets', {
+  id: text('id').primaryKey(),
+  type: text('type').notNull(),
+  url: text('url').notNull(),
+  mime_type: text('mime_type').notNull(),
+  name: text('name').notNull(),
+  size: integer('size').notNull(),
+  user_id: text('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  storage_key: text('storage_key').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`)
+})

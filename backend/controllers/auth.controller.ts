@@ -2,10 +2,8 @@ import { users, sessions } from '../database/schema'
 import db from '../database'
 import { eq } from 'drizzle-orm'
 import { hashPassword, verifyPassword } from '../utils/hash.util'
-import { generateToken } from '../utils/token.util'
 import type { AuthUser } from '../middleware/auth.middleware'
 import type { ControllerContext } from '../../types/controller.types'
-import { uuidv7 } from 'uuidv7'
 import flash from '../services/flash.service'
 
 export interface RegisterInput {
@@ -103,7 +101,7 @@ export const authController = {
     const [newUser] = await db
       .insert(users)
       .values({
-        id: uuidv7(),
+        id: Bun.randomUUIDv7(),
         name: input.name,
         email: input.email,
         password: hashedPassword
@@ -111,12 +109,12 @@ export const authController = {
       .returning()
 
     // Create session
-    const token = generateToken()
+    const token = Bun.randomUUIDv7()
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 30) // 30 days
 
     await db.insert(sessions).values({
-      id: uuidv7(),
+      id: Bun.randomUUIDv7(),
       userId: newUser.id,
       token,
       expiresAt
@@ -150,12 +148,12 @@ export const authController = {
     }
 
     // Create session
-    const token = generateToken()
+    const token = Bun.randomUUIDv7()
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 30) // 30 days
 
     await db.insert(sessions).values({
-      id: uuidv7(),
+      id: Bun.randomUUIDv7(),
       userId: user.id,
       token,
       expiresAt

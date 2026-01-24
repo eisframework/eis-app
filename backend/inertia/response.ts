@@ -1,5 +1,3 @@
-import { readFileSync } from 'fs'
-import { join } from 'path'
 import manifest from "../../dist/.vite/manifest.json"
 
 export interface InertiaConfig {
@@ -34,12 +32,12 @@ export class Inertia {
     return version()
   }
 
-  private getTemplate(): string {
+  private async getTemplate(): Promise<string> {
     if (!this.cachedTemplate || process.env.NODE_ENV === 'development') {
-      const templatePath = join(process.cwd(), this.config.root, 'inertia.html')
-      this.cachedTemplate = readFileSync(templatePath, 'utf-8')
+      const templatePath = `${process.cwd()}/${this.config.root}/inertia.html`
+      this.cachedTemplate = await Bun.file(templatePath).text()
     }
-    return this.cachedTemplate
+    return this.cachedTemplate!
   }
 
   private processViteDirective(html: string): string {
@@ -58,7 +56,7 @@ export class Inertia {
     })
   }
 
-  render(page: string, props: any = {}) {
+  async render(page: string, props: any = {}) {
     const allProps = { ...this.getSharedProps(), ...props }
 
     if (this.isXhr()) {
@@ -76,7 +74,7 @@ export class Inertia {
     // Server-side rendering for initial page load
     this.set.headers['Content-Type'] = 'text/html; charset=utf-8'
     
-    const template = this.getTemplate()
+    const template = await this.getTemplate()
 
     const pageData = JSON.stringify({
       component: page,

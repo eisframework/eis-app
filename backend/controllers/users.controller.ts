@@ -4,7 +4,6 @@ import { eq } from 'drizzle-orm'
 import { hashPassword } from '../utils/hash.util' 
 import { flash } from '../services/flash.service'
 import type { ControllerContext } from '../../types/controller.types'
-import { uuidv7 } from 'uuidv7'
  
 
 export const usersController = {
@@ -98,7 +97,7 @@ export const usersController = {
     const [newUser] = await db
       .insert(users)
       .values({
-        id: uuidv7(),
+        id: Bun.randomUUIDv7(),
         name: body.name,
         email: body.email,
         password: hashedPassword

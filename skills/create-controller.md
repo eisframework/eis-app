@@ -13,8 +13,9 @@ This guide is specific to the laju-elysia project using Inertia + Svelte + Drizz
    - Code reusable from multiple places
    - For simple CRUD, use inline logic in public methods
 4. **Use Drizzle ORM** - Import from `../database/schema` and use `db.query.table.find*()`
-5. **UUIDv7 for IDs** - Use `uuidv7()` for generating IDs
+5. **Bun.randomUUIDv7() for IDs** - Use `Bun.randomUUIDv7()` for generating IDs
 6. **Controllers are exported objects** - Not classes, use `export const controller = { ... }`
+7. **Use Bun APIs** - Prefer Bun native APIs over Node.js APIs
 
 ## Controller Structure
 
@@ -24,7 +25,6 @@ import db from '../database'
 import { eq } from 'drizzle-orm'
 import { hashPassword } from '../utils/hash.util'
 import type { ControllerContext } from '../../types/controller.types'
-import { uuidv7 } from 'uuidv7'
 import flash from '../services/flash.service'
 
 export const controllerName = {
@@ -158,7 +158,7 @@ async _store(body: { name: string; email: string; password: string }) {
   const [newItem] = await db
     .insert(table)
     .values({
-      id: uuidv7(),
+      id: Bun.randomUUIDv7(),
       name: body.name,
       email: body.email,
       password: hashedPassword
@@ -222,11 +222,20 @@ import { table } from '../database/schema'
 import db from '../database'
 import { eq } from 'drizzle-orm'
 import { hashPassword, verifyPassword } from '../utils/hash.util'
-import { generateToken } from '../utils/token.util'
 import type { ControllerContext } from '../../types/controller.types'
-import { uuidv7 } from 'uuidv7'
 import flash from '../services/flash.service'
 ```
+
+## Bun APIs Reference
+
+| Purpose | API | Example |
+|---------|-----|---------|
+| UUID v7 | `Bun.randomUUIDv7()` | `const id = Bun.randomUUIDv7()` |
+| Password hash | `Bun.password.hash()` | `await Bun.password.hash(password)` |
+| Password verify | `Bun.password.verify()` | `await Bun.password.verify(password, hash)` |
+| File read | `Bun.file().text()` | `await Bun.file(path).text()` |
+| File write | `Bun.write()` | `await Bun.write(path, buffer)` |
+| Crypto random | `crypto.randomUUID()` | `crypto.randomUUID()` |
 
 ## Quick Reference
 
