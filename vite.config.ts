@@ -23,8 +23,8 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: 'public/build',
-    emptyOutDir: true,
+    outDir: 'public',
+    emptyOutDir: false,
     rollupOptions: {
       input,
       output: {

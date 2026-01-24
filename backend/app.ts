@@ -20,7 +20,7 @@ const getNetworkAddress = () => {
   return 'localhost'
 }
 
-const app = new Elysia()
+export const app = new Elysia()
   .use(staticPlugin({
     assets: join(__dirname, '../public'),
     prefix: '/public'
@@ -30,10 +30,10 @@ const app = new Elysia()
   }))
   .use(routes)
 
-const server = app.listen(3000)
+const port = Number(process.env.PORT) || 3000
+const server = app.listen(port)
 
 const host = server.server?.hostname || 'localhost'
-const port = server.server?.port || 3000
 const network = getNetworkAddress()
 
 console.log('🚀 Server is running!')
