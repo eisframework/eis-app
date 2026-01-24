@@ -1,15 +1,60 @@
 {
-  "name": "learn-elysia",
+  "name": "eis-framework",
   "version": "1.0.50",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun run --watch src/index.ts"
+    "dev": "concurrently \"bun run dev:backend\" \"bun run dev:frontend\"",
+    "dev:backend": "bun run --watch backend/app.ts",
+    "dev:frontend": "vite",
+    "build": "bun run build:frontend && bun run build:backend",
+    "build:frontend": "vite build",
+    "build:backend": "bun build backend/index.ts --outdir ./dist",
+    "preview": "bun run dist/index.js",
+    "typecheck": "svelte-check --tsconfig ./tsconfig.json",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "bun run backend/database/migrate.ts",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "elysia": "latest"
+    "@elysiajs/html": "^1.4.0",
+    "@elysiajs/static": "^1.4.7",
+    "@sinclair/typebox": "^0.34.48",
+    "better-sqlite3": "^12.6.2",
+    "drizzle-orm": "^0.45.1",
+    "elysia": "^1.4.22",
+    "eta": "^4.5.0",
+    "knex": "^3.1.0",
+    "lucide-svelte": "^0.563.0",
+    "uuidv7": "^1.1.0"
   },
   "devDependencies": {
-    "bun-types": "latest"
+    "@inertiajs/progress": "^0.2.7",
+    "@inertiajs/svelte": "^2.3.11",
+    "@sveltejs/vite-plugin-svelte": "^4",
+    "@tailwindcss/vite": "^4.1.18",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/svelte": "^5.3.1",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^25.0.10",
+    "@vitest/ui": "^4.0.18",
+    "autoprefixer": "^10.4.23",
+    "bun-types": "^1.3.6",
+    "concurrently": "^9.2.1",
+    "drizzle-kit": "^0.31.8",
+    "happy-dom": "^20.3.7",
+    "postcss": "^8.5.6",
+    "rimraf": "^6.1.2",
+    "svelte": "^5.0.0",
+    "svelte-check": "^4.0.0",
+    "tailwindcss": "^4.1.18",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "vite": "^5",
+    "vitest": "^4.0.18"
   },
-  "module": "src/index.js"
+  "module": "backend/index.js"
 }

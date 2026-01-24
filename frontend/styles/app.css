@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: oklch(from rgb(var(--background)) l c h);
+  --color-foreground: oklch(from rgb(var(--foreground)) l c h);
+  --color-card: oklch(from rgb(var(--card)) l c h);
+  --color-card-foreground: oklch(from rgb(var(--card-foreground)) l c h);
+  --color-primary: oklch(from rgb(var(--primary)) l c h);
+  --color-primary-foreground: oklch(from rgb(var(--primary-foreground)) l c h);
+  --color-border: oklch(from rgb(var(--border)) l c h);
+  --color-input: oklch(from rgb(var(--input)) l c h);
+  --color-ring: oklch(from rgb(var(--ring)) l c h);
+  --color-muted: oklch(from rgb(var(--muted)) l c h);
+  --color-muted-foreground: oklch(from rgb(var(--muted-foreground)) l c h);
+}
+
+@layer base {
+  :root {
+    --background: 249 250 251;
+    --foreground: 17 24 39;
+    --card: 255 255 255;
+    --card-foreground: 17 24 39;
+    --primary: 249 115 22;
+    --primary-foreground: 255 255 255;
+    --border: 229 231 235;
+    --input: 229 231 235;
+    --ring: 249 115 22;
+    --muted: 243 244 246;
+    --muted-foreground: 107 114 128;
+  }
+
+  .dark {
+    --background: 2 6 23;
+    --foreground: 248 250 252;
+    --card: 15 23 42;
+    --card-foreground: 248 250 252;
+    --primary: 249 115 22;
+    --primary-foreground: 255 255 255;
+    --border: 30 41 59;
+    --input: 30 41 59;
+    --ring: 249 115 22;
+    --muted: 15 23 42;
+    --muted-foreground: 148 163 184;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    @apply bg-background/50 border border-border rounded-xl px-5 py-3.5 text-base text-foreground
+           transition-all duration-300
+           focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20
+           hover:border-border/80;
+  }
+
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  input[type="password"]:focus {
+    @apply bg-background;
+  }
+
+  label {
+    @apply text-muted-foreground transition-all duration-300 pointer-events-none text-sm font-medium;
+  }
+
+  input:focus + label,
+  input:not(:placeholder-shown) + label {
+    @apply -translate-y-7 text-xs;
+  }
+
+  input:focus + label {
+    @apply text-primary;
+  }
+
+  input:not(:placeholder-shown) + label {
+    @apply text-muted-foreground;
+  }
+}
+
+@layer utilities {
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+
+  @keyframes blob {
+    0% {
+      transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+      transform: translate(30px, -50px) scale(1.1);
+    }
+    66% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+    100% {
+      transform: translate(0px, 0px) scale(1);
+    }
+  }
+}

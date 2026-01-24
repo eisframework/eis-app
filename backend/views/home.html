@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home - Laju</title>
+  <meta name="description" content="Welcome to Laju - Modern full-stack framework">
+  <link rel="stylesheet" href="<%= it.asset('js/index.css') %>">
+</head>
+<body class="bg-slate-950 text-white antialiased">
+  <%~ include('partials/header') %>
+
+  <section class="relative overflow-hidden pt-32 pb-20 lg:pt-48 lg:pb-32">
+    <div class="absolute top-0 -left-4 w-72 h-72 bg-brand-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+    <div class="absolute top-0 -right-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+
+    <div class="container mx-auto px-6 max-w-7xl relative z-10">
+      <div class="text-center">
+        <h1 class="text-5xl lg:text-7xl font-extrabold tracking-tight leading-tight mb-6 text-white">
+          Welcome to <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-red-500">Laju</span>
+        </h1>
+        <p class="text-lg lg:text-xl text-slate-400 mb-8 leading-relaxed max-w-2xl mx-auto">
+          Build fast, type-safe full-stack applications with modern tools
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="/pricing" class="px-8 py-4 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-bold transition-all">
+            Get Started
+          </a>
+          <a href="/about" class="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all">
+            Learn More
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%~ include('partials/footer') %>
+
+  <script type="module" src="<%= it.asset('js/index.js') %>"></script>
+</body>
+</html>

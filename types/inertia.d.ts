@@ -1,0 +1,20 @@
+declare module '@inertiajs/svelte' {
+  export const progress: any;
+  export const router: any;
+  export const App: any;
+  export const Deferred: any;
+  export const Form: any;
+  export const useFormContext: any;
+  export const InfiniteScroll: any;
+  export const Link: any;
+  export const WhenVisible: any;
+  export const createInertiaApp: any;
+  export const inertia: any;
+  export const page: any;
+  export const usePage: any;
+  export const useForm: any;
+  export const usePoll: any;
+  export const usePrefetch: any;
+  export const useRemember: any;
+  export const config: any;
+}

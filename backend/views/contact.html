@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact - Laju</title>
+  <meta name="description" content="Get in touch with our team">
+  <link rel="stylesheet" href="<%= it.asset('js/index.css') %>">
+</head>
+<body class="bg-slate-950 text-white antialiased">
+  <%~ include('partials/header') %>
+
+  <section class="py-20">
+    <div class="container mx-auto px-6 max-w-7xl">
+      <div class="text-center mb-16">
+        <h1 class="text-5xl font-bold mb-4">Contact Us</h1>
+        <p class="text-slate-400 text-lg max-w-2xl mx-auto">Get in touch with our team</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+        <!-- Contact Info -->
+        <div class="space-y-8">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-brand-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-brand-500">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-white font-semibold mb-1">Email</h3>
+              <p class="text-slate-400">hello@laju.dev</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-brand-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-brand-500">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-white font-semibold mb-1">Location</h3>
+              <p class="text-slate-400">Jakarta, Indonesia</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-brand-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-brand-500">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-white font-semibold mb-1">Phone</h3>
+              <p class="text-slate-400">+62 21 1234 5678</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Form -->
+        <form action="/contact" method="POST" class="space-y-6">
+          <div>
+            <label for="name" class="block text-white font-medium mb-2">Name</label>
+            <input type="text" id="name" name="name" required class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-brand-500 transition-colors" placeholder="Your name">
+          </div>
+
+          <div>
+            <label for="email" class="block text-white font-medium mb-2">Email</label>
+            <input type="email" id="email" name="email" required class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-brand-500 transition-colors" placeholder="your@email.com">
+          </div>
+
+          <div>
+            <label for="message" class="block text-white font-medium mb-2">Message</label>
+            <textarea id="message" name="message" rows="5" required class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-brand-500 transition-colors resize-none" placeholder="How can we help you?"></textarea>
+          </div>
+
+          <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-lg font-semibold transition-colors">
+            Send Message
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <%~ include('partials/footer') %>
+
+  <script type="module" src="<%= it.asset('js/index.js') %>"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<section class="py-20 bg-slate-900/50">
+  <div class="container mx-auto px-6 max-w-7xl">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl lg:text-4xl font-bold text-white mb-4"><%= it.title || "Pricing" %></h2>
+      <p class="text-slate-400 text-lg max-w-2xl mx-auto"><%= it.description || "Choose the perfect plan for your needs" %></p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+      <% for (const plan of it.plans) { %>
+        <div class="bg-slate-800/50 backdrop-blur border <%= plan.highlight ? 'border-brand-500' : 'border-slate-700' %> rounded-2xl p-8 relative <%= plan.highlight ? 'scale-105' : '' %>">
+          <% if (plan.highlight) { %>
+            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+              <span class="bg-brand-500 text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wide">Popular</span>
+            </div>
+          <% } %>
+          
+          <h3 class="text-2xl font-bold text-white mb-2"><%= plan.name %></h3>
+          <p class="text-slate-400 mb-6"><%= plan.description %></p>
+          
+          <div class="mb-6">
+            <span class="text-4xl font-bold text-white"><%= plan.price %></span>
+            <% if (plan.period) { %>
+              <span class="text-slate-400"><%= plan.period %></span>
+            <% } %>
+          </div>
+
+          <ul class="space-y-3 mb-8">
+            <% for (const feature of plan.features) { %>
+              <li class="flex items-center gap-3 text-slate-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-brand-500 flex-shrink-0">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <%= feature %>
+              </li>
+            <% } %>
+          </ul>
+
+          <a href="<%= plan.ctaLink %>" class="block w-full py-3 <%= plan.highlight ? 'bg-brand-600 hover:bg-brand-500' : 'bg-slate-700 hover:bg-slate-600' %> text-white rounded-lg font-semibold transition-colors text-center">
+            <%= plan.ctaText %>
+          </a>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</section>

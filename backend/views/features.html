@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Features - Laju</title>
+  <meta name="description" content="Explore Laju features">
+  <link rel="stylesheet" href="<%= it.asset('js/index.css') %>">
+</head>
+<body class="bg-slate-950 text-white antialiased">
+  <%~ include('partials/header') %>
+
+  <section class="py-20">
+    <div class="container mx-auto px-6 max-w-7xl">
+      <div class="text-center mb-16">
+        <h1 class="text-5xl font-bold mb-4">Features</h1>
+        <p class="text-slate-400 text-lg max-w-2xl mx-auto">Everything you need to build modern applications</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-xl p-6 hover:border-brand-500/50 transition-colors">
+          <div class="w-12 h-12 bg-brand-500/10 rounded-lg flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-brand-500">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-white mb-2">Blazing Fast</h3>
+          <p class="text-slate-400">Built on HyperExpress with 258k+ requests per second</p>
+        </div>
+
+        <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-xl p-6 hover:border-brand-500/50 transition-colors">
+          <div class="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-500">
+              <path d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-white mb-2">Svelte 5</h3>
+          <p class="text-slate-400">Latest reactive UI with Runes for fine-grained reactivity</p>
+        </div>
+
+        <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-xl p-6 hover:border-brand-500/50 transition-colors">
+          <div class="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500">
+              <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-white mb-2">Inertia.js</h3>
+          <p class="text-slate-400">Modern monolith without SPA complexity</p>
+        </div>
+
+        <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-xl p-6 hover:border-brand-500/50 transition-colors">
+          <div class="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-500">
+              <path d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-white mb-2">BetterSQLite3</h3>
+          <p class="text-slate-400">Embedded DB with WAL Mode for high concurrency</p>
+        </div>
+
+        <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-xl p-6 hover:border-brand-500/50 transition-colors">
+          <div class="w-12 h-12 bg-orange-500/10 rounded-lg flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-500">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-white mb-2">Type Safe</h3>
+          <p class="text-slate-400">100% TypeScript from top to bottom</p>
+        </div>
+
+        <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-xl p-6 hover:border-brand-500/50 transition-colors">
+          <div class="w-12 h-12 bg-pink-500/10 rounded-lg flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-pink-500">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold text-white mb-2">Secure</h3>
+          <p class="text-slate-400">Built-in authentication and authorization</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%~ include('partials/footer') %>
+
+  <script type="module" src="<%= it.asset('js/index.js') %>"></script>
+</body>
+</html>

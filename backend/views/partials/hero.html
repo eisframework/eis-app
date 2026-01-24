@@ -1,0 +1,59 @@
+<section class="relative overflow-hidden pt-32 pb-20 lg:pt-48 lg:pb-32">
+  <div class="absolute top-0 -left-4 w-72 h-72 bg-brand-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+  <div class="absolute top-0 -right-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+
+  <div class="container mx-auto px-6 max-w-7xl relative z-10">
+    <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+      <div class="flex-1 text-center lg:text-left">
+        <% if (it.badge) { %>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-900/30 border border-brand-500/30 text-brand-400 text-xs font-semibold mb-6 uppercase tracking-wider">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
+            </span>
+            <%= it.badge %>
+          </div>
+        <% } %>
+
+        <h1 class="text-5xl lg:text-7xl font-extrabold tracking-tight leading-tight mb-6 text-white">
+          <%= it.title %>
+        </h1>
+
+        <p class="text-lg lg:text-xl text-slate-400 mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+          <%= it.description %>
+        </p>
+
+        <% if (it.cta) { %>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <a href="<%= it.cta.primaryLink %>" class="px-8 py-4 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-brand-500/20 flex items-center justify-center gap-2">
+              <span><%= it.cta.primaryText %></span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </a>
+            <% if (it.cta.secondaryText) { %>
+              <a href="<%= it.cta.secondaryLink %>" class="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                </svg>
+                <span><%= it.cta.secondaryText %></span>
+              </a>
+            <% } %>
+          </div>
+        <% } %>
+      </div>
+
+      <% if (it.image) { %>
+        <div class="flex-1">
+          <div class="relative">
+            <div class="absolute inset-0 bg-gradient-to-r from-brand-500 to-purple-500 rounded-2xl blur-2xl opacity-20"></div>
+            <div class="relative bg-slate-800/50 backdrop-blur-xl border border-slate-700 rounded-2xl p-8">
+              <pre class="text-sm text-slate-300 overflow-x-auto"><code><%= it.image %></code></pre>
+            </div>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</section>
