@@ -1,13 +1,13 @@
 import { Eta } from 'eta'
-
+import manifest from "../../dist/.vite/manifest.json"
 const eta = new Eta({ views: 'backend/views' })
 
 const asset = (path: string) => {
   const isDev = process.env.NODE_ENV !== 'production'
   if (isDev) {
-    return `http://localhost:5173/frontend/${path}`
+    return `http://localhost:5173/${path}`
   }
-  return `/${path}`
+  return `/`+manifest[path as keyof typeof manifest]?.file
 }
 
 export const view = {

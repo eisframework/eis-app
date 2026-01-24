@@ -16,7 +16,7 @@
   <meta name="twitter:title" content="<%= it.title || "EIS Framework" %>">
   <meta name="twitter:description" content="<%= it.description || "Build fast, type-safe full-stack applications" %>">
   
-  <link rel="stylesheet" href="<%= it.asset('styles/app.css') %>">
+  <link rel="stylesheet" href="<%= it.asset('frontend/entry/style.css') %>">
 </head>
 <body class="bg-slate-950 text-white antialiased selection:bg-orange-500 selection:text-white">
 
@@ -1027,6 +1027,6 @@
             </div>
         </div>
     </footer>
-  <script type="module" src="<%= it.asset('entry/app.ts') %>"></script>
+  <script type="module" src="<%= it.asset('frontend/entry/index.ts') %>"></script>
 </body>
 </html>

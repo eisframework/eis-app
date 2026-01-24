@@ -1,5 +1,6 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
+import manifest from "../../dist/.vite/manifest.json"
 
 export interface InertiaConfig {
   root: string
@@ -49,11 +50,11 @@ export class Inertia {
       
       if (isDev) {
         return ` 
-    <script type="module" src="http://localhost:5173/${entry}"></script>`
+    <script type="module" src="http://localhost:5173/frontend/entry/${entry}"></script>`
       }
       
       // Production: would need to read manifest and generate proper tags
-      return `<script type="module" src="/${entry}"></script>`
+      return `<script type="module" src="/${manifest[entry as keyof typeof manifest]?.file}"></script>`
     })
   }
 

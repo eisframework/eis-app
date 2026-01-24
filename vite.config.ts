@@ -7,7 +7,7 @@ import { resolve } from 'path'
 const input = {
   app: resolve(__dirname, 'frontend/entry/app.ts'),
   index: resolve(__dirname, 'frontend/entry/index.ts'),
-  css: resolve(__dirname, 'frontend/styles/app.css'),
+  style: resolve(__dirname, 'frontend/entry/style.css'),
 };
 
 export default defineConfig({
@@ -23,15 +23,11 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: 'public',
-    emptyOutDir: false,
+    outDir: 'dist',
+     manifest: true,
+    emptyOutDir: true,
     rollupOptions: {
-      input,
-      output: {
-        entryFileNames: 'assets/[name].js',
-        chunkFileNames: 'assets/[name].js',
-        assetFileNames: 'assets/[name][extname]'
-      }
+      input
     }
   }
 })

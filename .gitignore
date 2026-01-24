@@ -10,8 +10,7 @@ bun.lockb
 
 # Production builds
 /build
-/dist
-/public/assets
+/dist 
 /.svelte-kit
 /.vercel
 

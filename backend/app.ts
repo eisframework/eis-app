@@ -24,7 +24,11 @@ export const app = new Elysia()
   .use(staticPlugin({
     assets: join(__dirname, '../public'),
     prefix: '/public'
-  }))
+  })) 
+  .use(staticPlugin({
+    assets: join(__dirname, '../dist/assets'),
+    prefix: '/assets'
+  })) 
   .derive(({ request, set }) => ({
     inertia: (page: string, props: Record<string, unknown> = {}) => inertia(request, set, page, props)
   }))
