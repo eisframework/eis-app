@@ -1,6 +1,6 @@
-# Elysia Inertia Stack (EIS)
+# Elysia Inertia Svelte (EIS)
 
-A modern full-stack framework combining Elysia, Svelte, and Inertia.js for building fast, type-safe web applications with seamless SPA experience.
+A modern full-stack framework combining Elysia, Inertia.js and Svelte for building fast, type-safe web applications with seamless SPA experience.
 
 ## Features
 

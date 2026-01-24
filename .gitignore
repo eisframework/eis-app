@@ -11,11 +11,12 @@ bun.lockb
 # Production builds
 /build
 /dist 
-/storage
+storage/*
 /.svelte-kit
 /.vercel
 
 # Database
+data/*
 *.sqlite
 *.sqlite-*
 *.db
