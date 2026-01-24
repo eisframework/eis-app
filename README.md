@@ -123,11 +123,11 @@ bun run db:studio
 laju-elysia/
 ├── backend/                 # Elysia backend
 │   ├── controllers/         # Route controllers
-│   │   ├── auth.controller.ts
-│   │   ├── dashboard.controller.ts
-│   │   ├── public.controller.ts
-│   │   ├── upload.controller.ts
-│   │   └── users.controller.ts
+│   │   ├── auth.controller.ts      # Authentication (login, register, logout)
+│   │   ├── dashboard.controller.ts # Dashboard & profile pages
+│   │   ├── public.controller.ts    # Public pages (landing, home, about)
+│   │   ├── upload.controller.ts    # File upload (images & files)
+│   │   └── users.controller.ts     # User management
 │   ├── database/           # Database setup
 │   │   ├── migrations/
 │   │   ├── schema/
@@ -140,8 +140,11 @@ laju-elysia/
 │   ├── middleware/         # Route middleware
 │   │   └── auth.middleware.ts
 │   ├── services/           # Business logic services
-│   │   ├── s3.service.ts
-│   │   └── storage.service.ts
+│   │   ├── eta.service.ts         # Eta template engine (SSR)
+│   │   ├── flash.service.ts       # Flash messages
+│   │   ├── inertia.service.ts     # Inertia.js integration
+│   │   ├── s3.service.ts          # S3-compatible storage
+│   │   └── storage.service.ts     # Local file storage
 │   ├── app.ts             # Main Elysia app
 │   └── index.ts           # Backend entry point
 ├── frontend/              # Svelte frontend
