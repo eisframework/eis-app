@@ -13,7 +13,7 @@ export function inertia(
   page: string,
   props: Record<string, unknown> = {}
 ) {
-  const flashMessage = flash.get(request)
+  const flashMessage = flash.get(request, set)
   return render(request, set, page, {
     ...props,
     flash: flashMessage

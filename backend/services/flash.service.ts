@@ -10,9 +10,9 @@ export const flash = {
   },
 
   /**
-   * Get flash message from request headers
+   * Get flash message from request headers and clear it
    */
-  get(request: Request): FlashMessage | null {
+  get(request: Request, set?: FlashSetContext): FlashMessage | null {
     const cookieHeader = request.headers.get('cookie')
     if (!cookieHeader) return null
 
@@ -24,6 +24,10 @@ export const flash = {
 
     const flashCookie = cookies.flash
     if (!flashCookie) return null
+
+    if (set) {
+      this.clear(set)
+    }
 
     try {
       return JSON.parse(decodeURIComponent(flashCookie))

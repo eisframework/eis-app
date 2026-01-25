@@ -11,12 +11,14 @@
   let form = $state({
     name: '',
     email: '',
+    role: 'user',
     password: ''
   })
 
   $effect(() => {
     form.name = user.name
     form.email = user.email
+    form.role = user.role || 'user'
   })
 
   let isLoading = $state(false)
@@ -32,9 +34,9 @@
 <Layout {auth}>
   <div class="py-12">
     <div class="max-w-md mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      <div class="bg-card border border-border overflow-hidden rounded-lg">
         <div class="p-6">
-          <h1 class="text-2xl font-bold text-gray-900 mb-6">Edit User</h1>
+          <h1 class="text-2xl font-bold text-foreground mb-6">Edit User</h1>
 
           {#if flash?.type === 'error'}
             <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-lg mb-4">{flash.message}</div>
@@ -72,6 +74,22 @@
                        focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-background
                        hover:border-border/80"
               />
+            </div>
+
+            <div>
+              <label for="role" class="block text-sm font-medium text-muted-foreground mb-2.5">Role</label>
+              <select
+                id="role"
+                name="role"
+                value={form.role}
+                onchange={(e) => form.role = (e.target as HTMLSelectElement).value}
+                class="w-full px-5 py-3.5 bg-background/50 border border-border rounded-xl text-base text-foreground transition-all duration-300
+                       focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-background
+                       hover:border-border/80"
+              >
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
             </div>
 
             <div>

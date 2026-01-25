@@ -2,6 +2,25 @@ import { createInertiaApp } from '@inertiajs/svelte'
 import { mount, hydrate } from 'svelte'
 import './style.css'
 
+// Initialize dark mode from localStorage or system preference
+function initializeDarkMode() {
+  const saved = localStorage.getItem('darkMode')
+  let isDarkMode = false
+  
+  if (saved !== null) {
+    isDarkMode = saved === 'true'
+  } else {
+    isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+  }
+  
+  if (isDarkMode) {
+    document.documentElement.classList.add('dark')
+  }
+}
+
+// Initialize on app load
+initializeDarkMode()
+
 createInertiaApp({
   resolve: async (name: string) => {
     const pages = import.meta.glob('../pages/**/*.svelte', { eager: false }) as Record<string, () => Promise<{ default: any }>>

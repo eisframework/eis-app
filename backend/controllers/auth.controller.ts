@@ -41,7 +41,7 @@ export const authController = {
 
       authService.setAuthCookie(result.token, ctx.cookie!)
 
-      return Response.redirect('/', 303)
+      return Response.redirect('/home', 303)
     } catch (error: unknown) {
       flash.set(ctx.set, 'error', error instanceof Error ? error.message : 'Login failed')
       return Response.redirect('/login', 303)
@@ -127,7 +127,7 @@ export const authController = {
 
       const result = await authService.register(ctx.body)
       authService.setAuthCookie(result.token, ctx.cookie!)
-      return Response.redirect('/', 303)
+      return Response.redirect('/home', 303)
     } catch (error: unknown) {
       flash.set(ctx.set, 'error', error instanceof Error ? error.message : 'Registration failed')
       return Response.redirect('/register', 303)

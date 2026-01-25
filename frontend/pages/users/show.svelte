@@ -23,10 +23,10 @@
 <Layout {auth}>
   <div class="py-12">
     <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      <div class="bg-card border border-border overflow-hidden rounded-lg">
         <div class="p-6">
           <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-gray-900">User Details</h1>
+            <h1 class="text-2xl font-bold text-foreground">User Details</h1>
             {#if flash?.type === 'error'}
               <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">{flash.message}</div>
             {/if}
@@ -36,14 +36,14 @@
             <div class="space-x-2">
               <Link
                 href="/users/{user.id}/edit"
-                class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                class="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
               >
                 Edit
               </Link>
               <button
                 onclick={deleteUser}
                 disabled={isDeleting}
-                class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+                class="px-4 py-2 bg-destructive text-destructive-foreground rounded hover:bg-destructive/90 disabled:opacity-50"
               >
                 {#if isDeleting}
                   Deleting...
@@ -56,35 +56,35 @@
 
           <div class="space-y-4">
             <div>
-              <span class="block text-sm font-medium text-gray-700">ID</span>
-              <p class="mt-1 text-sm text-gray-900">{user.id}</p>
+              <span class="block text-sm font-medium text-muted-foreground">ID</span>
+              <p class="mt-1 text-sm text-foreground">{user.id}</p>
             </div>
 
             <div>
-              <span class="block text-sm font-medium text-gray-700">Name</span>
-              <p class="mt-1 text-sm text-gray-900">{user.name}</p>
+              <span class="block text-sm font-medium text-muted-foreground">Name</span>
+              <p class="mt-1 text-sm text-foreground">{user.name}</p>
             </div>
 
             <div>
-              <span class="block text-sm font-medium text-gray-700">Email</span>
-              <p class="mt-1 text-sm text-gray-900">{user.email}</p>
+              <span class="block text-sm font-medium text-muted-foreground">Email</span>
+              <p class="mt-1 text-sm text-foreground">{user.email}</p>
             </div>
 
             <div>
-              <span class="block text-sm font-medium text-gray-700">Created At</span>
-              <p class="mt-1 text-sm text-gray-900">{new Date(user.createdAt).toLocaleString()}</p>
+              <span class="block text-sm font-medium text-muted-foreground">Created At</span>
+              <p class="mt-1 text-sm text-foreground">{new Date(user.createdAt).toLocaleString()}</p>
             </div>
 
             <div>
-              <span class="block text-sm font-medium text-gray-700">Updated At</span>
-              <p class="mt-1 text-sm text-gray-900">{new Date(user.updatedAt).toLocaleString()}</p>
+              <span class="block text-sm font-medium text-muted-foreground">Updated At</span>
+              <p class="mt-1 text-sm text-foreground">{new Date(user.updatedAt).toLocaleString()}</p>
             </div>
           </div>
 
           <div class="mt-6">
             <Link
               href="/users"
-              class="text-indigo-600 hover:text-indigo-900"
+              class="text-primary hover:text-primary/90"
             >
               &larr; Back to Users
             </Link>

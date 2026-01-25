@@ -1,4 +1,5 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
+import { relations } from 'drizzle-orm'
 import { sql } from 'drizzle-orm'
 
 export const users = sqliteTable('users', {
@@ -52,3 +53,31 @@ export const passwordResetTokens = sqliteTable('password_reset_tokens', {
     .notNull()
     .default(sql`(unixepoch())`)
 })
+
+// Define relations
+export const usersRelations = relations(users, ({ many }) => ({
+  sessions: many(sessions),
+  assets: many(assets),
+  passwordResetTokens: many(passwordResetTokens)
+}))
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, {
+    fields: [sessions.userId],
+    references: [users.id]
+  })
+}))
+
+export const assetsRelations = relations(assets, ({ one }) => ({
+  user: one(users, {
+    fields: [assets.user_id],
+    references: [users.id]
+  })
+}))
+
+export const passwordResetTokensRelations = relations(passwordResetTokens, ({ one }) => ({
+  user: one(users, {
+    fields: [passwordResetTokens.userId],
+    references: [users.id]
+  })
+}))

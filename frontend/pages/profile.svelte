@@ -30,9 +30,9 @@
 <Layout {auth}>
   <div class="py-12">
     <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+      <div class="bg-card border border-border overflow-hidden rounded-lg">
         <div class="p-6">
-          <h1 class="text-2xl font-bold text-gray-900 mb-6">Change Profile</h1>
+          <h1 class="text-2xl font-bold text-foreground mb-6">Change Profile</h1>
 
           {#if flash?.type === 'error'}
             <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-lg mb-4">{flash.message}</div>
@@ -72,9 +72,9 @@
               />
             </div>
 
-            <div class="mt-6 pt-6 border-t border-gray-200">
-              <h2 class="text-lg font-semibold text-gray-900 mb-4">Change Password</h2>
-              <p class="text-sm text-gray-600 mb-4">Leave blank if you don't want to change your password</p>
+            <div class="mt-6 pt-6 border-t border-border">
+              <h2 class="text-lg font-semibold text-foreground mb-4">Change Password</h2>
+              <p class="text-sm text-muted-foreground mb-4">Leave blank if you don't want to change your password</p>
 
             <div class="space-y-5">
               <div>

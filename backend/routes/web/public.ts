@@ -7,7 +7,6 @@ import type { ControllerContext } from '../../../types/controller.types'
 export const publicRoutes = (app: Elysia<any>) => app
   .get('/', async () => await publicController.landing())
   .get('/test', async () => new Response(""))
-  .get('/home', async (ctx) => await publicController.home(ctx as unknown as ControllerContext))
   .get('/about', async (ctx) => await publicController.about(ctx as unknown as ControllerContext))
   .get('/pricing', async (ctx) => await publicController.pricing(ctx as unknown as ControllerContext))
   .get('/features', async (ctx) => await publicController.features(ctx as unknown as ControllerContext))

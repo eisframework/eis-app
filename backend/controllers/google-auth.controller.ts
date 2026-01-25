@@ -37,7 +37,7 @@ export const googleAuthController = {
       // Set auth cookie
       authService.setAuthCookie(result.token, ctx.cookie!)
 
-      return Response.redirect('/', 303)
+      return Response.redirect('/home', 303)
 
     } catch (error: unknown) {
       flash.set(ctx.set, 'error', error instanceof Error ? error.message : 'Google authentication failed')
