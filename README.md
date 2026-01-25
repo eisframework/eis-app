@@ -23,7 +23,7 @@ A modern full-stack framework combining Elysia, Inertia.js and Svelte for buildi
 - **Drizzle ORM** - Type-safe SQL toolkit
 - **SQLite** - Lightweight database
 - **Eta** - Fast, lightweight template engine
-- **bun-image-turbo** - Fast Rust-powered image processing
+- **Sharp** - High-performance image processing
 - **AWS SDK v3** - S3 storage support
 - **TypeScript** - Type-safe development
 
