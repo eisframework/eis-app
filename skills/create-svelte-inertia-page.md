@@ -2,14 +2,14 @@
 
 ## Core Principles
 
-1. **Check existing pages** - Always check if page exists in `resources/js/Pages/` before creating new ones
+1. **Check existing pages** - Always check if page exists in `frontend/pages/` before creating new ones
 2. **Svelte 5** - Use runes (`$state`, `$props`)
 3. **Import Inertia v2** - Import from `@inertiajs/svelte` (use `router`, `inertia`)
 4. **Match routes** - Page paths match controller inertia responses
 5. **Handle flash** - Display `flash` prop for errors/success
 6. **Use Inertia v2 router** - Form submissions via `router.post/put/delete`
 7. **Inertia v2 API** - Use `use:inertia` directive on `<a>` tags, `router` for navigation
-8. **Use DashboardLayout** - Import and use DashboardLayout from `@/Components/DashboardLayout.svelte`
+8. **Use DashboardLayout** - Import and use DashboardLayout from `@/components/DashboardLayout.svelte`
 9. **Match UI kit** - Match UI components from `workflow/ui-kit.html`
 
 **Important:**
@@ -59,7 +59,7 @@
 ```svelte
 <script>
   import { router } from '@inertiajs/svelte'
-  import DashboardLayout from '@/Components/DashboardLayout.svelte'
+  import DashboardLayout from '@/components/DashboardLayout.svelte'
   let { flash, posts } = $props()
   let isLoading = $state(false)
 </script>
@@ -78,7 +78,7 @@
 ```svelte
 <script>
   import { fly } from 'svelte/transition'
-  import DashboardLayout from '@/Components/DashboardLayout.svelte'
+  import DashboardLayout from '@/components/DashboardLayout.svelte'
   let { posts } = $props()
 </script>
 
@@ -102,7 +102,7 @@
 ```svelte
 <script>
   import { router } from '@inertiajs/svelte'
-  import DashboardLayout from '@/Components/DashboardLayout.svelte'
+  import DashboardLayout from '@/components/DashboardLayout.svelte'
   let { flash, post } = $props()
   let isEdit = !!post
   let form = $state({ title: post?.title || '', content: post?.content || '' })

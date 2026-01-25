@@ -71,14 +71,18 @@ Uses **Eta** templating engine for server-side rendering.
 
 ### Asset Helper
 ```html
-<script type="module" src="<%= it.asset('js/index.js') %>"></script>
-<link rel="stylesheet" href="<%= it.asset('js/index.css') %>">
+<!-- For Inertia pages -->
+<script type="module" src="<%= it.asset('app') %>"></script>
+
+<!-- For landing pages -->
+<script type="module" src="<%= it.asset('index') %>"></script>
+<link rel="stylesheet" href="<%= it.asset('style') %>">
 ```
 
 ### Available Assets
-- `js/app.js` - Main Inertia application bundle
-- `js/index.js` - Landing page JavaScript
-- `js/index.css` - Landing page styles (TailwindCSS v4)
+- `app` - Main Inertia application bundle (frontend/entry/app.ts)
+- `index` - Landing page JavaScript (frontend/entry/index.ts)
+- `style` - Global styles (frontend/entry/style.css)
 
 ### Asset Resolution
 - **Development**: Vite dev server with HMR
