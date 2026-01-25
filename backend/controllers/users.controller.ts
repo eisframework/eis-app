@@ -1,7 +1,6 @@
 import { users } from '../database/schema'
 import db from '../database'
 import { eq } from 'drizzle-orm'
-import { hashPassword } from '../utils/hash.util' 
 import { flash } from '../services/flash.service'
 import type { ControllerContext } from '../../types/controller.types'
  
@@ -93,7 +92,7 @@ export const usersController = {
 
   // Private methods for business logic
   async _store(body: { name: string; email: string; password: string }) {
-    const hashedPassword = await hashPassword(body.password)
+    const hashedPassword = await Bun.password.hash(body.password)
     const [newUser] = await db
       .insert(users)
       .values({
@@ -118,7 +117,7 @@ export const usersController = {
   },
 
   async _update(id: string, body: { name?: string; email?: string; password?: string }) {
-    const hashedPassword = body.password ? await hashPassword(body.password) : undefined
+    const hashedPassword = body.password ? await Bun.password.hash(body.password) : undefined
     await db
       .update(users)
       .set({

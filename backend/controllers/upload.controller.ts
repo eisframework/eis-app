@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm'
 import sharp from 'sharp'
 import type { ControllerContext } from '../../types/controller.types'
 import flash from '../services/flash.service'
+import { deleteObject } from '../services/storage.service'
 
 // Storage Service Selection:
 // To switch between S3 and Local Storage, change the import below:
@@ -195,9 +196,7 @@ export const uploadController = {
         return Response.redirect('/upload', 303)
       }
 
-      // TODO: Delete from storage
-      // Need to add deleteObject function to storage service
-
+      await deleteObject(asset.storage_key)
       await db.delete(assets).where(eq(assets.id, ctx.params.id))
       flash.set(ctx.set, 'success', 'Asset deleted successfully')
       ctx.set.headers['Content-Type'] = 'application/json'

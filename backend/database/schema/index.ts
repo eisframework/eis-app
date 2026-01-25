@@ -42,3 +42,13 @@ export const assets = sqliteTable('assets', {
     .notNull()
     .default(sql`(unixepoch())`)
 })
+
+export const passwordResetTokens = sqliteTable('password_reset_tokens', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  token: text('token').notNull().unique(),
+  expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`)
+})

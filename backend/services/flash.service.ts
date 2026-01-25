@@ -1,15 +1,10 @@
-export type FlashType = 'success' | 'error'
-
-export interface FlashMessage {
-  type: FlashType
-  message: string
-}
+import type { FlashType, FlashMessage, FlashSetContext } from '../../types/controller.types'
 
 export const flash = {
   /**
    * Set flash message as cookie
    */
-  set(set: any, type: FlashType, message: string) {
+  set(set: FlashSetContext, type: FlashType, message: string) {
     const flashData = JSON.stringify({ type, message })
     set.headers['Set-Cookie'] = `flash=${encodeURIComponent(flashData)}; Path=/; HttpOnly; SameSite=Lax`
   },
@@ -21,7 +16,7 @@ export const flash = {
     const cookieHeader = request.headers.get('cookie')
     if (!cookieHeader) return null
 
-    const cookies = cookieHeader.split(';').reduce((acc: any, cookie: string) => {
+    const cookies = cookieHeader.split(';').reduce((acc: Record<string, string>, cookie: string) => {
       const [key, value] = cookie.trim().split('=')
       acc[key] = value
       return acc
@@ -40,7 +35,7 @@ export const flash = {
   /**
    * Clear flash cookie
    */
-  clear(set: any) {
+  clear(set: FlashSetContext) {
     set.headers['Set-Cookie'] = 'flash=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0'
   }
 }

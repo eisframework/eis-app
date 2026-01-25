@@ -16,6 +16,7 @@ This guide is specific to the laju-elysia project using Inertia + Svelte + Drizz
 5. **Bun.randomUUIDv7() for IDs** - Use `Bun.randomUUIDv7()` for generating IDs
 6. **Controllers are exported objects** - Not classes, use `export const controller = { ... }`
 7. **Use Bun APIs** - Prefer Bun native APIs over Node.js APIs
+8. **Manual validation in controllers** - Validate input at the beginning of each method before business logic
 
 ## Controller Structure
 
@@ -70,8 +71,26 @@ async create(ctx: ControllerContext) {
 
 ### store() - Create (302)
 ```typescript
-async store(ctx: ControllerContext & { body: { name: string; email: string } }) {
+async store(ctx: ControllerContext & { body: { name: string; email: string; password: string } }) {
   try {
+    // Validate input
+    const { name, email, password } = ctx.body
+
+    if (!name || name.length < 2) {
+      flash.set(ctx.set, 'error', 'Name must be at least 2 characters')
+      return Response.redirect('/items/create', 303)
+    }
+
+    if (!email || !email.includes('@')) {
+      flash.set(ctx.set, 'error', 'Invalid email')
+      return Response.redirect('/items/create', 303)
+    }
+
+    if (!password || password.length < 8) {
+      flash.set(ctx.set, 'error', 'Password must be at least 8 characters')
+      return Response.redirect('/items/create', 303)
+    }
+
     const newItem = await this._store(ctx.body)
     flash.set(ctx.set, 'success', 'Item created successfully')
     ctx.set.headers['Content-Type'] = 'application/json'
@@ -202,6 +221,49 @@ async _delete(id: string) {
 }
 ```
 
+## Validation Patterns
+
+### Common Validations
+
+```typescript
+// Required field
+if (!value) {
+  flash.set(ctx.set, 'error', 'Field is required')
+  return Response.redirect('/path', 303)
+}
+
+// String length
+if (!value || value.length < 2) {
+  flash.set(ctx.set, 'error', 'Must be at least 2 characters')
+  return Response.redirect('/path', 303)
+}
+
+// Email format
+if (!email || !email.includes('@')) {
+  flash.set(ctx.set, 'error', 'Invalid email')
+  return Response.redirect('/path', 303)
+}
+
+// Password minimum length
+if (!password || password.length < 8) {
+  flash.set(ctx.set, 'error', 'Password must be at least 8 characters')
+  return Response.redirect('/path', 303)
+}
+
+// Password confirmation
+if (password !== password_confirmation) {
+  flash.set(ctx.set, 'error', 'Passwords do not match')
+  return Response.redirect('/path', 303)
+}
+```
+
+### Validation Order
+
+1. Extract values from `ctx.body`
+2. Validate each field
+3. Return early with flash message if invalid
+4. Continue to business logic if all valid
+
 ## Flash Message Pattern
 
 ```typescript
@@ -239,15 +301,15 @@ import flash from '../services/flash.service'
 
 ## Quick Reference
 
-| Method | Returns | Error Handling |
-|--------|---------|----------------|
-| index | `ctx.inertia()` | `ctx.inertia('errors/404')` |
-| create | `ctx.inertia()` | `ctx.inertia('errors/404')` |
-| store | `Response.redirect()` | `flash.set()` + redirect |
-| show | `ctx.inertia()` | `ctx.inertia('errors/404')` |
-| edit | `ctx.inertia()` | `ctx.inertia('errors/404')` |
-| update | `Response.redirect()` | `flash.set()` + redirect |
-| delete | `Response.redirect()` | `flash.set()` + redirect |
+| Method | Returns | Error Handling | Validation |
+|--------|---------|----------------|------------|
+| index | `ctx.inertia()` | `ctx.inertia('errors/404')` | N/A |
+| create | `ctx.inertia()` | `ctx.inertia('errors/404')` | N/A |
+| store | `Response.redirect()` | `flash.set()` + redirect | ✅ Manual validation |
+| show | `ctx.inertia()` | `ctx.inertia('errors/404')` | N/A |
+| edit | `ctx.inertia()` | `ctx.inertia('errors/404')` | N/A |
+| update | `Response.redirect()` | `flash.set()` + redirect | ✅ Manual validation |
+| delete | `Response.redirect()` | `flash.set()` + redirect | N/A |
 
 ## Auth Token Pattern (for login/register)
 

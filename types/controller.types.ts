@@ -1,7 +1,7 @@
 import type { AuthUser } from '../backend/middleware/auth.middleware'
 
 // Common types
-export interface CookieStore {
+export interface AppCookieStore {
   auth_token: {
     value?: string
     httpOnly?: boolean
@@ -27,13 +27,8 @@ export interface ControllerContext {
   query?: Record<string, string>
   params?: Record<string, string>
   headers: Record<string, string | undefined>
-  set: {
-    headers: Record<string, string | number>
-    status?: number | string
-    redirect?: string
-    cookie?: Record<string, any>
-  }
-  cookie?: Record<string, any>
+  set: ResponseSet
+  cookie?: AppCookieStore
   inertia: InertiaHandler
   request: Request
 }
@@ -65,4 +60,17 @@ export interface UpdateProfileBody {
   email?: string
   password?: string
   current_password?: string
+}
+
+// Flash message types
+export type FlashType = 'success' | 'error'
+
+export interface FlashMessage {
+  type: FlashType
+  message: string
+}
+
+// Flash set context type
+export interface FlashSetContext {
+  headers: Record<string, string | number>
 }
