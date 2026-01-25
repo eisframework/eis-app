@@ -3,19 +3,22 @@ import { Resend } from 'resend'
 const apiKey = process.env.RESEND_API_KEY
 const defaultFrom = process.env.EMAIL_FROM || 'no-reply@example.com'
 
-if (!apiKey) {
+let resend: Resend | null = null
+
+if (apiKey) {
+  resend = new Resend(apiKey)
+} else {
   console.warn('RESEND_API_KEY not set. Email service will not work.')
 }
-
-const resend = new Resend(apiKey || '')
 
 export async function send(to: string | string[], subject: string, html?: string, text?: string, options?: {
   from?: string
   replyTo?: string
   attachments?: Array<{ filename: string; content: string }>
 }): Promise<void> {
-  if (!apiKey) {
-    throw new Error('RESEND_API_KEY is required')
+  if (!resend) {
+    console.warn('Email service is not configured. Email sending skipped.')
+    return
   }
 
   const recipients = Array.isArray(to) ? to : [to]

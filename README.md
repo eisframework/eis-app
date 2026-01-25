@@ -67,8 +67,8 @@ bun run dev
 
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd laju-elysia
+git clone <repository-url> my-app
+cd my-app
 
 # Install dependencies
 bun install

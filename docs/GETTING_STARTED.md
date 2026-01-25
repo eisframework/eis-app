@@ -10,6 +10,28 @@ Welcome to EIS (Elysia Inertia Svelte) Framework! This guide will help you get u
 
 ## Installation
 
+### Quick Start (Recommended)
+
+```bash
+# Create a new EIS project
+bun create eis my-app
+
+cd my-app
+
+# Install dependencies
+bun install
+
+# Run database migrations
+bun run db:migrate
+
+# Start development server
+bun run dev
+```
+
+Visit `http://localhost:3000` in your browser.
+
+### Manual Installation
+
 ### 1. Clone the Repository
 
 ```bash
