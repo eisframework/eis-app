@@ -56,27 +56,27 @@
 
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700">ID</label>
+              <span class="block text-sm font-medium text-gray-700">ID</span>
               <p class="mt-1 text-sm text-gray-900">{user.id}</p>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700">Name</label>
+              <span class="block text-sm font-medium text-gray-700">Name</span>
               <p class="mt-1 text-sm text-gray-900">{user.name}</p>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700">Email</label>
+              <span class="block text-sm font-medium text-gray-700">Email</span>
               <p class="mt-1 text-sm text-gray-900">{user.email}</p>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700">Created At</label>
+              <span class="block text-sm font-medium text-gray-700">Created At</span>
               <p class="mt-1 text-sm text-gray-900">{new Date(user.createdAt).toLocaleString()}</p>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700">Updated At</label>
+              <span class="block text-sm font-medium text-gray-700">Updated At</span>
               <p class="mt-1 text-sm text-gray-900">{new Date(user.updatedAt).toLocaleString()}</p>
             </div>
           </div>

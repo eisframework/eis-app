@@ -166,9 +166,8 @@ laju-elysia/
 │   └── app.ts          # Server entry point
 ├── frontend/              # Svelte frontend
 │   ├── components/        # Reusable components
-│   │   ├── Layout.svelte
-│   │   ├── NavLink.svelte
-│   │   └── TextInput.svelte
+│   │   ├── Layout.svelte 
+│   │   └── NavLink.svelte
 │   ├── pages/            # Inertia pages
 │   │   ├── auth/          # Authentication pages
 │   │   ├── errors/        # Error pages

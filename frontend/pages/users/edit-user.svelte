@@ -1,6 +1,5 @@
 <script lang="ts">
   import Layout from '@components/Layout.svelte'
-  import TextInput from '@components/TextInput.svelte'
   import { Link, router } from '@inertiajs/svelte'
 
   let { auth, user, flash }: { 
@@ -10,9 +9,14 @@
   } = $props()
 
   let form = $state({
-    name: user.name,
-    email: user.email,
+    name: '',
+    email: '',
     password: ''
+  })
+
+  $effect(() => {
+    form.name = user.name
+    form.email = user.email
   })
 
   let isLoading = $state(false)
@@ -39,47 +43,71 @@
             <div class="p-4 bg-green-500/10 border border-green-500/20 rounded-lg mb-4">{flash.message}</div>
           {/if}
 
-          <form onsubmit={(e) => { e.preventDefault(); submit(); }}>
-            <TextInput
-              name="name"
-              type="text"
-              label="Name"
-              value={form.name}
-              oninput={(e) => form.name = (e.target as HTMLInputElement).value}
-              required
-            />
+          <form onsubmit={(e) => { e.preventDefault(); submit(); }} class="space-y-5">
+            <div>
+              <label for="name" class="block text-sm font-medium text-muted-foreground mb-2.5">Name</label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                value={form.name}
+                oninput={(e) => form.name = (e.target as HTMLInputElement).value}
+                required
+                class="w-full px-5 py-3.5 bg-background/50 border border-border rounded-xl text-base text-foreground transition-all duration-300
+                       focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-background
+                       hover:border-border/80"
+              />
+            </div>
 
-            <TextInput
-              name="email"
-              type="email"
-              label="Email"
-              value={form.email}
-              oninput={(e) => form.email = (e.target as HTMLInputElement).value}
-              required
-            />
+            <div>
+              <label for="email" class="block text-sm font-medium text-muted-foreground mb-2.5">Email</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={form.email}
+                oninput={(e) => form.email = (e.target as HTMLInputElement).value}
+                required
+                class="w-full px-5 py-3.5 bg-background/50 border border-border rounded-xl text-base text-foreground transition-all duration-300
+                       focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-background
+                       hover:border-border/80"
+              />
+            </div>
 
-            <TextInput
-              name="password"
-              type="password"
-              label="Password (leave blank to keep current)"
-              value={form.password}
-              oninput={(e) => form.password = (e.target as HTMLInputElement).value}
-            />
+            <div>
+              <label for="password" class="block text-sm font-medium text-muted-foreground mb-2.5">Password (leave blank to keep current)</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                value={form.password}
+                oninput={(e) => form.password = (e.target as HTMLInputElement).value}
+                class="w-full px-5 py-3.5 bg-background/50 border border-border rounded-xl text-base text-foreground transition-all duration-300
+                       focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-background
+                       hover:border-border/80"
+              />
+            </div>
 
-            <div class="flex justify-between items-center mt-4">
+            <div class="flex justify-between items-center">
               <Link
                 href="/users"
-                class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                class="px-4 py-2 border border-border rounded-xl font-medium text-muted-foreground bg-background/50 hover:bg-background/80 transition-all shadow-sm hover:shadow-md text-base"
               >
                 Cancel
               </Link>
               <button
                 type="submit"
                 disabled={isLoading}
-                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                class="px-4 py-2 border border-transparent rounded-xl font-bold text-primary-foreground bg-primary hover:bg-primary/90 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-base"
               >
                 {#if isLoading}
-                  Updating...
+                  <span class="flex items-center gap-2">
+                    <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Updating...
+                  </span>
                 {:else}
                   Update User
                 {/if}

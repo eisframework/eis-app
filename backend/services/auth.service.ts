@@ -5,6 +5,7 @@ import {
   exchangeCodeForTokens,
   getGoogleUserInfo,
 } from './google-oauth.service'
+import { send } from './resend.service'
 import type { AppCookieStore, ResponseSet } from '../../types/controller.types'
 
 interface RateLimitStore {
@@ -314,9 +315,21 @@ export const authService = {
       expiresAt
     })
 
-    // TODO: Send email with reset link
-    // For now, in development, log the token
-    console.log(`Password reset token for ${email}: ${token}`)
+    // Send email with reset link
+    const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${token}`
+    
+    await send(
+      email,
+      'Reset Your Password',
+      `
+        <h1>Reset Your Password</h1>
+        <p>Click the link below to reset your password:</p>
+        <a href="${resetUrl}">Reset Password</a>
+        <p>This link will expire in 1 hour.</p>
+        <p>If you didn't request this, please ignore this email.</p>
+      `,
+      `Reset your password by visiting: ${resetUrl}`
+    )
   },
 
   /**
