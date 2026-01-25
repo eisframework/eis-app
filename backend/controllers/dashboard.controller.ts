@@ -1,10 +1,11 @@
-import { authMiddleware } from '../middleware/auth.middleware'
+import authService from '../services/auth.service'
 import type { ControllerContext, UpdateProfileBody } from '../../types/controller.types'
 import flash from '../services/flash.service'
 
 export const dashboardController = {
   async index(ctx: ControllerContext) {
-    const user = await authMiddleware(ctx.cookie!)
+    const token = (ctx.cookie?.auth_token?.value as string) || ''
+    const user = await authService.getSessionUser(token)
     return ctx.inertia('home', {
       auth: { user }
     })

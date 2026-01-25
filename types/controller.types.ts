@@ -1,4 +1,4 @@
-import type { AuthUser } from '../backend/middleware/auth.middleware'
+import type { AuthUser } from '../backend/services/auth.service'
 
 // Common types
 export interface AppCookieStore {

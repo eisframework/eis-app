@@ -1,10 +1,7 @@
-import { users, sessions } from '../database/schema'
-import db from '../database'
-import { eq } from 'drizzle-orm'
-import type { AuthUser } from '../middleware/auth.middleware'
+import authService from '../services/auth.service'
+import type { AuthUser } from '../services/auth.service'
 import type { ControllerContext } from '../../types/controller.types'
 import flash from '../services/flash.service'
-import authService from '../services/auth.service'
 
 export interface RegisterInput {
   name: string

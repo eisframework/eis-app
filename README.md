@@ -139,9 +139,7 @@ laju-elysia/
 │   ├── inertia/            # Inertia handlers
 │   │   ├── handler.ts
 │   │   ├── index.ts
-│   │   └── response.ts
-│   ├── middleware/         # Route middleware
-│   │   └── auth.middleware.ts         # Authentication middleware
+│   │   └── response.ts 
 │   ├── routes/              # Route definitions
 │   │   ├── web/
 │   │   │   ├── auth.ts 

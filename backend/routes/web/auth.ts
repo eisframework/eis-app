@@ -2,13 +2,14 @@ import { Elysia } from 'elysia'
 import { usersController } from '../../controllers/users.controller'
 import { dashboardController } from '../../controllers/dashboard.controller'
 import { uploadController } from '../../controllers/upload.controller'
-import { authMiddleware } from '../../middleware/auth.middleware'
+import authService from '../../services/auth.service'
 import type { ControllerContext } from '../../../types/controller.types'
 
 export const authRoutes = (app: Elysia<any>) => app
   .group('/dashboard', (app) => app
     .derive(async ({ cookie }) => {
-      const user = await authMiddleware(cookie)
+      const token = (cookie?.auth_token?.value as string) || ''
+      const user = await authService.getSessionUser(token)
       if (!user) throw new Error('Unauthorized')
       return { user }
     })
@@ -16,7 +17,8 @@ export const authRoutes = (app: Elysia<any>) => app
   )
   .group('/profile', (app) => app
     .derive(async ({ cookie }) => {
-      const user = await authMiddleware(cookie)
+      const token = (cookie?.auth_token?.value as string) || ''
+      const user = await authService.getSessionUser(token)
       if (!user) throw new Error('Unauthorized')
       return { user }
     })
@@ -25,7 +27,8 @@ export const authRoutes = (app: Elysia<any>) => app
   )
   .group('/users', (app) => app
     .derive(async ({ cookie }) => {
-      const user = await authMiddleware(cookie)
+      const token = (cookie?.auth_token?.value as string) || ''
+      const user = await authService.getSessionUser(token)
       if (!user) throw new Error('Unauthorized')
       return { user }
     })
@@ -39,7 +42,8 @@ export const authRoutes = (app: Elysia<any>) => app
   )
   .group('/upload', (app) => app
     .derive(async ({ cookie }) => {
-      const user = await authMiddleware(cookie)
+      const token = (cookie?.auth_token?.value as string) || ''
+      const user = await authService.getSessionUser(token)
       if (!user) throw new Error('Unauthorized')
       return { user }
     })

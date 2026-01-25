@@ -50,6 +50,13 @@ export interface AuthResult {
   token: string
 }
 
+export interface AuthUser {
+  id: string
+  name: string
+  email: string
+  role: string
+}
+
 /**
  * Authentication Service
  * Handles all authentication-related operations
@@ -340,6 +347,36 @@ export const authService = {
 
     // Delete the used token
     await db.delete(passwordResetTokens).where(eq(passwordResetTokens.id, resetToken.id))
+  },
+
+  /**
+   * Get user from session token
+   */
+  async getSessionUser(token: string): Promise<AuthUser | null> {
+    if (!token) return null
+
+    const session = await db.query.sessions.findFirst({
+      where: eq(sessions.token, token),
+      with: {
+        user: true
+      }
+    })
+
+    if (!session) return null
+
+    // Check if session is expired
+    if (new Date(session.expiresAt) < new Date()) {
+      await db.delete(sessions).where(eq(sessions.token, token))
+      return null
+    }
+
+    const user = session.user as { id: string; name: string; email: string; role: string }
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role
+    }
   }
 }
 
