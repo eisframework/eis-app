@@ -6,6 +6,7 @@ export interface AuthUser {
   id: string
   name: string
   email: string
+  role: string
 }
 
 export async function getSessionUser(token: string): Promise<AuthUser | null> {
@@ -26,11 +27,12 @@ export async function getSessionUser(token: string): Promise<AuthUser | null> {
     return null
   }
 
-  const user = session.user as { id: string; name: string; email: string }
+  const user = session.user as { id: string; name: string; email: string; role: string }
   return {
     id: user.id,
     name: user.name,
-    email: user.email
+    email: user.email,
+    role: user.role
   }
 }
 

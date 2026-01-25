@@ -48,7 +48,7 @@ export class Inertia {
       
       if (isDev) {
         return ` 
-    <script type="module" src="http://localhost:5173/frontend/entry/${entry}"></script>`
+    <script type="module" src="http://localhost:5173/${entry}"></script>`
       }
       
       // Production: would need to read manifest and generate proper tags

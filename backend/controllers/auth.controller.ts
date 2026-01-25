@@ -1,10 +1,10 @@
 import { users, sessions } from '../database/schema'
 import db from '../database'
 import { eq } from 'drizzle-orm'
-import { hashPassword, verifyPassword } from '../utils/hash.util'
 import type { AuthUser } from '../middleware/auth.middleware'
 import type { ControllerContext } from '../../types/controller.types'
 import flash from '../services/flash.service'
+import authService from '../services/auth.service'
 
 export interface RegisterInput {
   name: string
@@ -17,6 +17,10 @@ export interface LoginInput {
   password: string
 }
 
+export interface ExtendedAuthUser extends AuthUser {
+  role: string
+}
+
 export const authController = {
   async getLogin(ctx: ControllerContext) {
     return ctx.inertia('auth/login', {})
@@ -24,12 +28,10 @@ export const authController = {
 
   async postLogin(ctx: ControllerContext & { body: LoginInput }) {
     try {
-      const result = await this.login(ctx.body)
-      ctx.cookie!.auth_token.value = result.token
-      ctx.cookie!.auth_token.httpOnly = true
-      ctx.cookie!.auth_token.path = '/'
-      ctx.cookie!.auth_token.maxAge = 60 * 60 * 24 * 30
-      ctx.set.headers['Content-Type'] = 'application/json'
+      const result = await authService.login(ctx.body)
+      
+      authService.setAuthCookie(result.token, ctx.cookie!, ctx.set)
+
       return Response.redirect('/', 303)
     } catch (error: unknown) {
       flash.set(ctx.set, 'error', error instanceof Error ? error.message : 'Login failed')
@@ -63,12 +65,8 @@ export const authController = {
 
   async postRegister(ctx: ControllerContext & { body: RegisterInput }) {
     try {
-      const result = await this.register(ctx.body)
-      ctx.cookie!.auth_token.value = result.token
-      ctx.cookie!.auth_token.httpOnly = true
-      ctx.cookie!.auth_token.path = '/'
-      ctx.cookie!.auth_token.maxAge = 60 * 60 * 24 * 30
-      ctx.set.headers['Content-Type'] = 'application/json'
+      const result = await authService.register(ctx.body)
+      authService.setAuthCookie(result.token, ctx.cookie!, ctx.set)
       return Response.redirect('/', 303)
     } catch (error: unknown) {
       ctx.set.status = 400
@@ -78,125 +76,36 @@ export const authController = {
 
   async postLogout(ctx: ControllerContext) {
     const token = (ctx.cookie!.auth_token.value as string) || ''
-    if (token) await this.logout(token)
-    ctx.cookie!.auth_token.remove()
-    ctx.set.headers['Content-Type'] = 'application/json'
+    if (token) await authService.logout(token)
+    authService.removeAuthCookie(ctx.cookie!, ctx.set)
     return Response.redirect('/', 303)
   },
 
-  async register(input: RegisterInput) {
-    // Check if user already exists
-    const existingUser = await db.query.users.findFirst({
-      where: eq(users.email, input.email)
-    })
-
-    if (existingUser) {
-      throw new Error('Email already registered')
+  /**
+   * Impersonate a user (development only, admin only)
+   * POST /auth/impersonate
+   */
+  async postImpersonate(ctx: ControllerContext & { user?: AuthUser } & { body: { userId: string } }) {
+    if (!ctx.user) {
+      ctx.set.status = 401
+      return { error: 'Unauthorized' }
     }
 
-    // Hash password
-    const hashedPassword = await hashPassword(input.password)
-
-    // Create user
-    const [newUser] = await db
-      .insert(users)
-      .values({
-        id: Bun.randomUUIDv7(),
-        name: input.name,
-        email: input.email,
-        password: hashedPassword
-      })
-      .returning()
-
-    // Create session
-    const token = Bun.randomUUIDv7()
-    const expiresAt = new Date()
-    expiresAt.setDate(expiresAt.getDate() + 30) // 30 days
-
-    await db.insert(sessions).values({
-      id: Bun.randomUUIDv7(),
-      userId: newUser.id,
-      token,
-      expiresAt
-    })
-
-    return {
-      user: {
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email
-      },
-      token
-    }
-  },
-
-  async login(input: LoginInput) {
-    // Find user by email
-    const user = await db.query.users.findFirst({
-      where: eq(users.email, input.email)
-    })
-
-    if (!user) {
-      throw new Error('Invalid credentials')
+    // Check if current user is admin
+    if (ctx.user.role !== 'admin') {
+      ctx.set.status = 403
+      return { error: 'Admin only' }
     }
 
-    // Verify password
-    const isValid = await verifyPassword(input.password, user.password)
-
-    if (!isValid) {
-      throw new Error('Invalid credentials')
-    }
-
-    // Create session
-    const token = Bun.randomUUIDv7()
-    const expiresAt = new Date()
-    expiresAt.setDate(expiresAt.getDate() + 30) // 30 days
-
-    await db.insert(sessions).values({
-      id: Bun.randomUUIDv7(),
-      userId: user.id,
-      token,
-      expiresAt
-    })
-
-    return {
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email
-      },
-      token
-    }
-  },
-
-  async logout(token: string) {
-    await db.delete(sessions).where(eq(sessions.token, token))
-    return { success: true }
-  },
-
-  async me(token: string): Promise<AuthUser | null> {
-    if (!token) return null
-
-    const session = await db.query.sessions.findFirst({
-      where: eq(sessions.token, token),
-      with: {
-        user: true
-      }
-    })
-
-    if (!session) return null
-
-    // Check if session is expired
-    if (new Date(session.expiresAt) < new Date()) {
-      await db.delete(sessions).where(eq(sessions.token, token))
-      return null
-    }
-
-    const user = session.user as { id: string; name: string; email: string }
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email
+    try {
+      const result = await authService.impersonate(ctx.body.userId)
+      authService.setAuthCookie(result.token, ctx.cookie!, ctx.set)
+      return Response.json({ user: result.user, token: result.token })
+    } catch (error: unknown) {
+      ctx.set.status = 400
+      return { error: error instanceof Error ? error.message : 'Impersonation failed' }
     }
   }
 }
+
+export default authController

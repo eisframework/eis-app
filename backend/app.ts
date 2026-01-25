@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia'
 import { staticPlugin } from '@elysiajs/static'
+import { cookie } from '@elysiajs/cookie'
 import { routes } from './routes'
 import inertia from './services/inertia.service'
 import { join } from 'path'

@@ -1,7 +1,7 @@
 import { assets } from '../database/schema'
 import db from '../database'
 import { eq } from 'drizzle-orm'
-import { transform } from 'bun-image-turbo'
+import sharp from 'sharp'
 import type { ControllerContext } from '../../types/controller.types'
 import flash from '../services/flash.service'
 
@@ -72,10 +72,10 @@ export const uploadController = {
       const fileName = `${id}.webp`
 
       const buffer = await file.arrayBuffer()
-      const processedBuffer = await transform(Buffer.from(buffer), {
-        resize: { width: 1200, height: 1200, fit: 'inside' },
-        output: { format: 'webp', webp: { quality: 80 } }
-      })
+      const processedBuffer = await sharp(Buffer.from(buffer))
+        .resize(1200, 1200, { fit: 'inside' })
+        .webp({ quality: 80 })
+        .toBuffer()
 
       const storageKey = `assets/${fileName}`
       await uploadBuffer(storageKey, processedBuffer)
