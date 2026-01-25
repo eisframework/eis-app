@@ -142,6 +142,11 @@ laju-elysia/
 │   │   └── response.ts
 │   ├── middleware/         # Route middleware
 │   │   └── auth.middleware.ts         # Authentication middleware
+│   ├── routes/              # Route definitions
+│   │   ├── web/
+│   │   │   ├── auth.ts 
+│   │   │   └── public.ts
+│   │   └── index.ts
 │   ├── services/           # Business logic services
 │   │   ├── auth.service.ts         # Authentication (login, register, password reset, OAuth)
 │   │   ├── eta.service.ts         # Eta template engine (SSR)
@@ -150,45 +155,77 @@ laju-elysia/
 │   │   ├── google-oauth.service.ts # Google OAuth service
 │   │   ├── s3.service.ts          # S3-compatible storage
 │   │   └── storage.service.ts     # Local file storage
-│   ├── routes/              # Route definitions
-│   │   ├── web/
-│   │   │   ├── auth.ts
-│   │   │   ├── public.ts
-│   │   │   └── index.ts
-│   │   └── index.ts
-│   ├── app.ts             # Main Elysia app
-│   └── index.ts           # Backend entry point
+│   ├── utils/               # Utility functions
+│   ├── views/               # Eta HTML templates (SSR)
+│   │   ├── about.html
+│   │   ├── contact.html
+│   │   ├── features.html
+│   │   ├── home.html
+│   │   ├── index.html
+│   │   ├── inertia.html
+│   │   ├── pricing.html
+│   │   └── partials/        # Reusable HTML partials 
+│   └── app.ts          # Server entry point
 ├── frontend/              # Svelte frontend
 │   ├── components/        # Reusable components
 │   │   ├── Layout.svelte
-│   │   └── NavLink.svelte
-│   ├── entry/            # Frontend entry point
-│   │   ├── app.ts
-│   │   └── index.ts
+│   │   ├── NavLink.svelte
+│   │   └── TextInput.svelte
 │   ├── pages/            # Inertia pages
-│   │   ├── auth/
-│   │   ├── errors/
-│   │   ├── users/
+│   │   ├── auth/          # Authentication pages
+│   │   ├── errors/        # Error pages
+│   │   ├── users/         # User management pages
 │   │   ├── about.svelte
 │   │   ├── dashboard.svelte
 │   │   ├── home.svelte
-│   │   ├── profile.svelte
-│   │   ├── register.svelte
-│   │   └── login.svelte
-│   └── entry/            # Frontend entry point
-│       ├── app.ts
-│       ├── index.ts
-│       └── style.css
-├── data/                 # Database files
-├── dist/                 # Production build output
+│   │   └── profile.svelte
+│   ├── entry/            # Frontend entry point
+│   │   ├── app.ts
+│   │   ├── index.ts
+│   │   └── style.css
+│   └── vite-env.d.ts      # Vite TypeScript declarations
+├── data/                 # Database files (SQLite)
 ├── docs/                 # Documentation
+│   ├── ARCHITECTURE.md   # Architecture overview
+│   ├── CHANGELOG.md      # Version history
+│   ├── CONTRIBUTING.md   # Contribution guidelines
+│   ├── DATABASE.md       # Database guide
+│   ├── FAQ.md           # Frequently asked questions
+│   ├── GETTING_STARTED.md # Quick start guide
+│   ├── QUICK_REFERENCE.md # Quick reference
+│   ├── SSR_WITH_ETA.md   # Server-side rendering with Eta
+│   └── TESTING.md       # Testing guide
 ├── public/               # Static assets
-├── storage/              # File storage
+├── skills/               # Development skill guides
+│   ├── create-controller.md           # Controller creation guide
+│   ├── create-svelte-inertia-page.md # Svelte Inertia page guide
+│   ├── deployment-guide.md            # Deployment instructions
+│   ├── eta-template-engine-ssr.md     # Eta SSR guide
+│   └── testing-guide.md               # Testing guide
+├── storage/              # File storage (local uploads)
 ├── tests/                # Test files
+│   ├── backend/          # Backend tests
+│   ├── frontend/         # Frontend tests
+│   ├── integration/      # Integration tests
+│   ├── unit/             # Unit tests
+│   ├── utils/            # Test utilities
+│   └── setup.ts          # Test setup
 ├── types/                # TypeScript definitions
-└── skills/               # Development skill guides
-    ├── create-controller.md
-    └── deployment-guide.md
+│   ├── controller.types.ts
+│   └── inertia.d.ts
+├── workflow/             # Workflow configurations
+├── .env.example          # Environment variables template
+├── .env.production       # Production environment
+├── .env.test             # Test environment
+├── .gitignore
+├── bun.lock              # Dependency lock file
+├── CLAUDE.md             # Claude AI configuration
+├── drizzle.config.ts     # Drizzle ORM configuration
+├── package.json          # Project dependencies
+├── svelte.config.js      # Svelte configuration
+├── tsconfig.json         # TypeScript configuration
+├── vite.config.ts        # Vite configuration
+└── vitest.config.ts      # Vitest configuration
 ```
 
 ## Configuration
