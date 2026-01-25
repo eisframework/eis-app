@@ -10,6 +10,7 @@ A modern full-stack framework combining Elysia, Inertia.js and Svelte for buildi
 - **Inertia.js** - SPA-like experience without building a separate API
 - **Server-Side Rendering** - SEO-friendly with Eta template engine
 - **Authentication** - Built-in auth system with middleware
+- **Email** - Multi-adapter email service (Resend & SMTP)
 - **File Upload** - Support for local and S3 storage with image processing
 - **Database** - SQLite with Drizzle ORM and migrations
 - **Testing** - Vitest with coverage support
@@ -24,6 +25,8 @@ A modern full-stack framework combining Elysia, Inertia.js and Svelte for buildi
 - **SQLite** - Lightweight database
 - **Eta** - Fast, lightweight template engine
 - **Sharp** - High-performance image processing
+- **Resend** - Email service provider
+- **Nodemailer** - SMTP email transport
 - **AWS SDK v3** - S3 storage support
 - **TypeScript** - Type-safe development
 
@@ -151,6 +154,8 @@ laju-elysia/
 │   │   ├── flash.service.ts       # Flash messages
 │   │   ├── inertia.service.ts     # Inertia.js integration
 │   │   ├── google-oauth.service.ts # Google OAuth service
+│   │   ├── resend.service.ts      # Resend email provider
+│   │   ├── smtp.service.ts        # SMTP email transport
 │   │   ├── s3.service.ts          # S3-compatible storage
 │   │   └── storage.service.ts     # Local file storage
 │   ├── utils/               # Utility functions
@@ -257,6 +262,20 @@ WASABI_BUCKET=your-bucket-name
 WASABI_ACCESS_KEY=your-access-key
 WASABI_SECRET_KEY=your-secret-key
 CDN_URL=https://cdn.example.com
+
+# Email Service
+APP_URL=http://localhost:3000
+EMAIL_FROM=no-reply@example.com
+
+# Email Provider (Resend)
+RESEND_API_KEY=your-resend-api-key
+
+# Email Provider (SMTP)
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-smtp-username
+SMTP_PASS=your-smtp-password
 ```
 
 ## Available Scripts
@@ -391,6 +410,84 @@ Configure storage via environment variables:
 - `WASABI_ACCESS_KEY` - S3 access key
 - `WASABI_SECRET_KEY` - S3 secret key
 - `CDN_URL` - Optional CDN URL for public assets
+
+## Email Service
+
+The project supports email sending with two provider options:
+
+### Resend (Recommended for Production)
+
+For production environments, use Resend as your email provider:
+
+```typescript
+import { send } from '../services/resend.service'
+
+await send(
+  'user@example.com',
+  'Welcome!',
+  '<h1>Hello!</h1>',
+  'Hello!'
+)
+```
+
+### SMTP (For Development or Custom Mail Servers)
+
+For development or custom SMTP servers:
+
+```typescript
+import { send } from '../services/smtp.service'
+
+await send(
+  'user@example.com',
+  'Welcome!',
+  '<h1>Hello!</h1>',
+  'Hello!'
+)
+```
+
+### Switching Between Providers
+
+Simply change the import to switch between email providers. Both services have the same API:
+
+```typescript
+// Resend
+import { send } from '../services/resend.service'
+
+// SMTP
+import { send } from '../services/smtp.service'
+```
+
+### Environment Variables
+
+Configure email service via environment variables:
+
+- `APP_URL` - Application URL for generating links (default: `http://localhost:3000`)
+- `EMAIL_FROM` - Default sender email address
+- `RESEND_API_KEY` - Resend API key (for Resend provider)
+- `SMTP_HOST` - SMTP server host
+- `SMTP_PORT` - SMTP server port (default: 587)
+- `SMTP_SECURE` - Use SSL/TLS (default: false)
+- `SMTP_USER` - SMTP username
+- `SMTP_PASS` - SMTP password
+
+### Usage Example
+
+Sending emails with attachments:
+
+```typescript
+await send(
+  'user@example.com',
+  'Document Attached',
+  '<h1>Your Document</h1>',
+  'Your document is attached.',
+  {
+    attachments: [{
+      filename: 'document.pdf',
+      content: Buffer.from('file content')
+    }]
+  }
+)
+```
 
 ## Documentation
 
