@@ -45,6 +45,26 @@ A modern full-stack framework combining Elysia, Inertia.js and Svelte for buildi
 
 ## Installation
 
+### Quick Start (Recommended)
+
+```bash
+# Create a new EIS project
+bun create eis my-app
+
+cd my-app
+
+# Install dependencies
+bun install
+
+# Run database migrations
+bun run db:migrate
+
+# Start development server
+bun run dev
+```
+
+### Manual Installation
+
 ```bash
 # Clone the repository
 git clone <repository-url>
