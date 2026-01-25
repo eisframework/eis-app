@@ -2,15 +2,15 @@
 
 ## Overview
 
-Laju Framework memiliki 3 agent yang bekerja sama untuk membangun aplikasi dengan kualitas tinggi:
+EIS Framework memiliki 3 agent yang bekerja sama untuk membangun aplikasi dengan kualitas tinggi:
 
 1. **INIT_AGENT** - Memulai project baru
 2. **TASK_AGENT** - Implementasi fitur
 3. **MANAGER_AGENT** - Manajemen perubahan dan release notes
 
-**Note:** Testing dan deployment berjalan otomatis via GitHub Actions CI. Referensi:
-- `skills/testing-guide.md` - Panduan menulis test (unit, integration, E2E)
-- `skills/deployment-guide.md` - Panduan deployment ke production
+**Note:** Testing dan deployment manual. Referensi:
+- `docs/TESTING.md` - Panduan menulis test (unit, integration)
+- `README.md` - Panduan deployment ke production
 
 ---
 
@@ -19,9 +19,9 @@ Laju Framework memiliki 3 agent yang bekerja sama untuk membangun aplikasi denga
 ### Kapan Menggunakan?
 
 Gunakan **INIT_AGENT** saat:
-- Memulai project Laju baru
+- Memulai project EIS baru
 - Setup infrastructure awal
-- Inisialisasi GitHub Actions
+- Inisialisasi database
 
 ### Workflow
 
@@ -30,17 +30,11 @@ Gunakan **INIT_AGENT** saat:
 "Hai @workflow/INIT_AGENT.md, yuk kita mulai project baru"
 
 # 2. Ikuti step-by-step:
-# - Buat README.md
-# - Buat PRD.md (requirements, design specifications)
-# - Buat TDD.md (technical design)
-# - Buat ui-kit.html (UI design system)
-# - Buat PROGRESS.md (tracking template)
-# - Setup GitHub Actions workflow
-# - Setup migrations
+# - Setup environment variables (.env)
+# - Run database migrations
 # - Setup design system
 # - Buat layout components
 # - Customize auth pages
-# - Git init & first commit
 # - Start dev server
 
 # 3. Setelah selesai:
@@ -51,9 +45,8 @@ Gunakan **INIT_AGENT** saat:
 ### Output
 
 - Project infrastructure siap
-- GitHub Actions workflow ter-setup
-- Testing infrastructure (Vitest, Playwright, Supertest) ter-setup
-- Dev server berjalan di http://localhost:5555
+- Database ter-setup (SQLite + Drizzle ORM)
+- Dev server berjalan di http://localhost:3000
 
 ---
 
@@ -79,15 +72,13 @@ Gunakan **TASK_AGENT** saat:
 # - Tanya mau kerja task apa
 
 # 3. Pilih task dan implementasi:
-# - Buat/modify controller
-# - Buat/modify page
-# - Tambah route
-# - Tambah validator (jika perlu)
+# - Buat/modify controller (backend/controllers/)
+# - Buat/modify page (frontend/pages/)
+# - Tambah route (backend/routes/web/)
+# - Tambah database schema jika perlu
 
 # 4. Test lokal (opsional tapi recommended):
-npm run test:unit
-npm run test:integration
-npm run test:e2e
+bun run test:run
 
 # 5. Update PROGRESS.md:
 # - Mark task sebagai [x] completed
@@ -96,18 +87,14 @@ npm run test:e2e
 # 6. Commit & push:
 git add .
 git commit -m "feat: add feature"
-git push origin feature/your-feature
-
-# 7. GitHub Actions run tests otomatis
-# - Jika pass → Lanjut
-# - Jika fail → Fix → Re-push
+git push
 ```
 
 ### Best Practices
 
 - ✅ Cek existing files dulu (jangan duplicate)
 - ✅ Gunakan built-in controllers/services
-- ✅ Match UI kit dari `ui-kit.html`
+- ✅ Match UI kit dari `workflow/ui-kit.html`
 - ✅ Test lokal sebelum push
 - ✅ Update PROGRESS.md setelah selesai
 
@@ -187,28 +174,11 @@ EXAMPLE:
 - Tampilkan tasks
 - User pilih task
 - Implementasi fitur
-- Test lokal (referensi: skills/testing-guide.md)
+- Test lokal (bun run test:run)
 - Update PROGRESS.md
-- Commit & push ke feature branch
+- Commit & push
 
-# GitHub Actions (Automated):
-- Run tests (unit, integration, E2E)
-- All pass ✅
-
-# STEP 2: Merge ke main
-git checkout main
-git merge feature/your-feature
-git push origin main
-
-# GitHub Actions (Automated):
-- Run tests lagi
-- All pass ✅
-- Deploy ke production
-- Run smoke tests
-- All pass ✅
-- Deployment successful
-
-# STEP 3: MANAGER_AGENT create release notes
+# STEP 2: MANAGER_AGENT create release notes
 # Update CHANGELOG.md
 # Update version di package.json
 ```
@@ -219,7 +189,7 @@ git push origin main
 # STEP 1: QA lapor bug
 SOURCE: QA
 TYPE: Bug
-ISSUE: "Users can delete residents with payment history"
+ISSUE: "Users can delete users with payment history"
 
 # STEP 2: MANAGER_AGENT analyze
 - Priority: Critical (data integrity issue)
@@ -228,17 +198,9 @@ ISSUE: "Users can delete residents with payment history"
 
 # STEP 3: TASK_AGENT fix bug
 - Implement fix
-- Test lokal (referensi: skills/testing-guide.md)
+- Test lokal (bun run test:run)
 - Update PROGRESS.md
 - Commit & push
-
-# GitHub Actions (Automated):
-- Run tests
-- All pass ✅
-- Deploy ke production
-- Run smoke tests
-- All pass ✅
-- Deployment successful
 
 # STEP 4: MANAGER_AGENT create release notes
 # Update CHANGELOG.md
@@ -263,17 +225,9 @@ REQUEST: "Tolong tambah fitur kirim notifikasi WhatsApp"
 
 # STEP 3: TASK_AGENT implement
 - Implement feature
-- Test lokal (referensi: skills/testing-guide.md)
+- Test lokal (bun run test:run)
 - Update PROGRESS.md
 - Commit & push
-
-# GitHub Actions (Automated):
-- Run tests
-- All pass ✅
-- Deploy ke production
-- Run smoke tests
-- All pass ✅
-- Deployment successful
 
 # STEP 4: MANAGER_AGENT create release notes
 # Update CHANGELOG.md
@@ -315,26 +269,11 @@ Each agent has a specific scope and will reject work outside their responsibilit
 - ❌ Approve deployment
 - ❌ Deploy to production
 
-### DEPLOYMENT_AGENT
-**CAN:**
-- ✅ Monitor deployment progress
-- ✅ Verify deployment success
-- ✅ Handle rollback if needed
-- ✅ Run smoke tests (automated)
-
-**CANNOT:**
-- ❌ Implement features or write code
-- ❌ Modify code directly
-- ❌ Manage changes or update PRD/TDD
-- ❌ Run tests manually
-
-**Note:** Deployment runs automatically via GitHub Actions. Reference: `skills/deployment-guide.md`
-
 ### INIT_AGENT
 **CAN:**
 - ✅ Create project infrastructure
-- ✅ Setup GitHub Actions workflow
-- ✅ Setup testing infrastructure
+- ✅ Setup environment variables
+- ✅ Setup database
 - ✅ Create documentation (README, PRD, TDD, PROGRESS, ui-kit)
 - ✅ Setup design system
 
@@ -342,8 +281,6 @@ Each agent has a specific scope and will reject work outside their responsibilit
 - ❌ Implement features or write code
 - ❌ Create controllers, pages, routes
 - ❌ Manage changes after initialization
-
-**Note:** Testing reference available at `skills/testing-guide.md`. Deployment reference available at `skills/deployment-guide.md`.
 
 **If an agent is asked to do something outside scope:**
 ```
@@ -363,8 +300,8 @@ Silakan mention @[workflow/CORRECT_AGENT.md] untuk [task]."
 | **MANAGER_AGENT** | Manage changes, create release notes | Change requests, deployment approval |
 
 **Reference Guides:**
-- `skills/testing-guide.md` - Panduan menulis test (unit, integration, E2E)
-- `skills/deployment-guide.md` - Panduan deployment ke production
+- `docs/TESTING.md` - Panduan menulis test (unit, integration)
+- `README.md` - Panduan deployment ke production
 
 ### Workflow Commands
 
@@ -379,10 +316,7 @@ Silakan mention @[workflow/CORRECT_AGENT.md] untuk [task]."
 "Hai @workflow/MANAGER_AGENT.md, ada change request"
 
 # Deploy to production
-git checkout main
-git merge feature/your-feature
-git push origin main
-# GitHub Actions handles the rest
+# Manual deployment after approval
 ```
 
 ### MANAGER_AGENT Usage Examples
@@ -392,7 +326,7 @@ git push origin main
 "Hai @workflow/MANAGER_AGENT.md, ada bug report:
 SOURCE: QA
 TYPE: Bug
-ISSUE: Users can delete residents with payment history"
+ISSUE: Users can delete users with payment history"
 ```
 
 **Feature Request:**
@@ -446,13 +380,10 @@ REQUEST: Tolong tambah fitur kirim notifikasi WhatsApp"
 
 ### Important Notes
 
-1. **Testing runs automatically** - GitHub Actions CI runs unit, integration, E2E tests
-2. **Deployment only if tests pass** - GitHub Actions won't deploy if tests fail
-3. **Auto-rollback on failure** - GitHub Actions akan auto-rollback jika deployment fail
-4. **Branching is automatic** - TASK_AGENT auto-creates feature branches
-5. **Testing reference** - skills/testing-guide.md untuk panduan menulis test
-6. **Deployment reference** - skills/deployment-guide.md untuk panduan deployment
-7. **Release notes by MANAGER_AGENT** - Setelah deployment success
+1. **Testing runs manually** - Use `bun run test:run` to run tests
+2. **Deployment manual** - Deploy to production manually after approval
+3. **Branching manual** - Create feature branches manually
+4. **Release notes by MANAGER_AGENT** - Setelah deployment success
 
 ---
 
@@ -461,44 +392,26 @@ REQUEST: Tolong tambah fitur kirim notifikasi WhatsApp"
 ### Tests Fail
 
 ```bash
-# 1. Check GitHub Actions logs
+# 1. Check test output
 # 2. Identify error
 # 3. Fix locally
-# 4. Re-push
-git add .
-git commit -m "fix: resolve test failure"
-git push origin feature/your-feature
+# 4. Re-run tests
+bun run test:run
 ```
 
 ### Deployment Fails
 
 ```bash
-# 1. Check GitHub Actions logs
-# 2. GitHub Actions auto-rollback (otomatis)
-# 3. Fix issue
-# 4. Re-push
-git add .
-git commit -m "fix: resolve deployment issue"
-git push origin main
-```
-
-### Smoke Tests Fail
-
-```bash
-# 1. GitHub Actions auto-rollback (otomatis)
-# 2. Check logs
-# 3. Fix issue
-# 4. Re-push
-git add .
-git commit -m "fix: resolve smoke test failure"
-git push origin main
+# 1. Check deployment logs
+# 2. Fix issue
+# 3. Re-deploy
 ```
 
 ---
 
 ## Summary
 
-3 Agent Laju Framework bekerja sama untuk membangun aplikasi dengan kualitas tinggi:
+3 Agent EIS Framework bekerja sama untuk membangun aplikasi dengan kualitas tinggi:
 
 1. **INIT_AGENT** - Setup project infrastructure
 2. **TASK_AGENT** - Implementasi fitur
@@ -506,31 +419,19 @@ git push origin main
 
 **Workflow:**
 ```
-INIT_AGENT → TASK_AGENT → GitHub Actions CI → MANAGER_AGENT
+INIT_AGENT → TASK_AGENT → MANAGER_AGENT
 ```
 
-**GitHub Actions CI:**
-- Automated testing (unit, integration, E2E)
-- Automated deployment (only if tests pass)
-- Auto-rollback on failure
-
 **Key Features:**
-- ✅ Automated testing via GitHub Actions
-- ✅ Automated deployment (only if tests pass)
-- ✅ Auto-rollback on failure
+- ✅ Manual testing (bun run test:run)
+- ✅ Manual deployment (after approval)
 - ✅ Simplified pre-deployment checklist
-- ✅ Industry-standard GitHub Flow
+- ✅ Industry-standard Git Flow
 - ✅ Cocok untuk solo developer
-
-**Testing Reference:**
-- `skills/testing-guide.md` - Panduan menulis test (unit, integration, E2E)
-
-**Deployment Reference:**
-- `skills/deployment-guide.md` - Panduan deployment ke production
 
 **Best Practices:**
 - Gunakan feature branches
 - Test lokal sebelum push
 - Update PROGRESS.md setelah selesai
-- Monitor GitHub Actions
 - Review release notes
+- Follow EIS Framework patterns

@@ -12,7 +12,7 @@ Panduan lengkap untuk memulai project baru dengan EIS Framework.
 - ✅ Setup design system
 - ✅ Create layout components
 - ✅ Customize auth pages
-- ✅ Git init and first commit
+- ✅ First commit
 
 **INIT_AGENT CANNOT:**
 - ❌ Implement features or write code
@@ -224,10 +224,9 @@ cp -r github-workflow-sample/workflows .github/
 
 **Note:** GitHub Actions akan otomatis run tests setiap kali Anda push ke GitHub. Deployment hanya akan terjadi jika semua tests pass.
 
-### 14. Git Init and First Commit
+### 14. First Commit
 
 ```bash
-git init
 git add .
 git commit -m "Initial commit: Project setup"
 ```
