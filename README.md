@@ -123,14 +123,17 @@ bun run db:studio
 laju-elysia/
 ├── backend/                 # Elysia backend
 │   ├── controllers/         # Route controllers
-│   │   ├── auth.controller.ts      # Authentication (login, register, logout)
+│   │   ├── auth.controller.ts      # Authentication (login, register, logout, password reset)
 │   │   ├── dashboard.controller.ts # Dashboard & profile pages
+│   │   ├── google-auth.controller.ts # Google OAuth integration
 │   │   ├── public.controller.ts    # Public pages (landing, home, about)
 │   │   ├── upload.controller.ts    # File upload (images & files)
 │   │   └── users.controller.ts     # User management
 │   ├── database/           # Database setup
 │   │   ├── migrations/
 │   │   ├── schema/
+│   │   │   ├── index.ts
+│   │   │   └── schema.ts              # Database schemas (users, sessions, assets, passwordResetTokens)
 │   │   ├── index.ts
 │   │   └── migrate.ts
 │   ├── inertia/            # Inertia handlers
@@ -138,13 +141,21 @@ laju-elysia/
 │   │   ├── index.ts
 │   │   └── response.ts
 │   ├── middleware/         # Route middleware
-│   │   └── auth.middleware.ts
+│   │   └── auth.middleware.ts         # Authentication middleware
 │   ├── services/           # Business logic services
+│   │   ├── auth.service.ts         # Authentication (login, register, password reset, OAuth)
 │   │   ├── eta.service.ts         # Eta template engine (SSR)
 │   │   ├── flash.service.ts       # Flash messages
 │   │   ├── inertia.service.ts     # Inertia.js integration
+│   │   ├── google-oauth.service.ts # Google OAuth service
 │   │   ├── s3.service.ts          # S3-compatible storage
 │   │   └── storage.service.ts     # Local file storage
+│   ├── routes/              # Route definitions
+│   │   ├── web/
+│   │   │   ├── auth.ts
+│   │   │   ├── public.ts
+│   │   │   └── index.ts
+│   │   └── index.ts
 │   ├── app.ts             # Main Elysia app
 │   └── index.ts           # Backend entry point
 ├── frontend/              # Svelte frontend
@@ -161,7 +172,9 @@ laju-elysia/
 │   │   ├── about.svelte
 │   │   ├── dashboard.svelte
 │   │   ├── home.svelte
-│   │   └── profile.svelte
+│   │   ├── profile.svelte
+│   │   ├── register.svelte
+│   │   └── login.svelte
 │   └── entry/            # Frontend entry point
 │       ├── app.ts
 │       ├── index.ts
@@ -172,7 +185,10 @@ laju-elysia/
 ├── public/               # Static assets
 ├── storage/              # File storage
 ├── tests/                # Test files
-└── types/                # TypeScript definitions
+├── types/                # TypeScript definitions
+└── skills/               # Development skill guides
+    ├── create-controller.md
+    └── deployment-guide.md
 ```
 
 ## Configuration
