@@ -407,28 +407,28 @@ import type { ControllerContext } from '../../types/controller.types'
 import flash from '../services/flash.service'
 
 export const postController = {
-  async index(ctx: ControllerContext) {
+  async index({ inertia, user }: ControllerContext) {
     const posts = await db.query.posts.findMany({
       with: { user: true },
       orderBy: (posts, { desc }) => [desc(posts.createdAt)]
     })
-    return ctx.inertia('posts/index', {
-      auth: { user: ctx.user },
+    return inertia('posts/index', {
+      auth: { user },
       posts
     })
   },
 
-  async store(ctx: ControllerContext & { body: { title: string; content: string } }) {
+  async store({ body, set }: ControllerContext & { body: { title: string; content: string } }) {
     try {
-      const { title, content } = ctx.body
+      const { title, content } = body
 
       if (!title || title.length < 2) {
-        flash.set(ctx.set, 'error', 'Title must be at least 2 characters')
+        flash.set(set, 'error', 'Title must be at least 2 characters')
         return Response.redirect('/posts/create', 303)
       }
 
       if (!content || content.length < 10) {
-        flash.set(ctx.set, 'error', 'Content must be at least 10 characters')
+        flash.set(set, 'error', 'Content must be at least 10 characters')
         return Response.redirect('/posts/create', 303)
       }
 
@@ -436,16 +436,16 @@ export const postController = {
         id: Bun.randomUUIDv7(),
         title,
         content,
-        userId: ctx.user.id,
+        userId: user.id,
         createdAt: new Date(),
         updatedAt: new Date()
       })
 
-      flash.set(ctx.set, 'success', 'Post created successfully')
-      ctx.set.headers['Content-Type'] = 'application/json'
+      flash.set(set, 'success', 'Post created successfully')
+      set.headers['Content-Type'] = 'application/json'
       return Response.redirect('/posts', 303)
     } catch (error: unknown) {
-      flash.set(ctx.set, 'error', error instanceof Error ? error.message : 'Failed to create post')
+      flash.set(set, 'error', error instanceof Error ? error.message : 'Failed to create post')
       return Response.redirect('/posts/create', 303)
     }
   }
@@ -560,6 +560,7 @@ export const postController = {
 ```typescript
 import { Elysia } from 'elysia'
 import { postController } from "../../controllers/post.controller"
+import { wrapHandler } from '../../utils/type-helpers'
 import authService from '../../services/auth.service'
 
 export const postRoutes = (app: Elysia<any>) => app
@@ -570,12 +571,12 @@ export const postRoutes = (app: Elysia<any>) => app
       if (!user) throw new Error('Unauthorized')
       return { user }
     })
-    .get('/', async (ctx) => await postController.index(ctx as unknown as ControllerContext))
-    .get('/create', async (ctx) => await postController.create(ctx as unknown as ControllerContext))
-    .post('/', async (ctx) => await postController.store(ctx as unknown as ControllerContext & { body: any }))
-    .get('/:id/edit', async (ctx) => await postController.edit(ctx as unknown as ControllerContext & { params: { id: string } }))
-    .put('/:id', async (ctx) => await postController.update(ctx as unknown as ControllerContext & { params: { id: string }; body: any }))
-    .delete('/:id', async (ctx) => await postController.delete(ctx as unknown as ControllerContext & { params: { id: string } }))
+    .get('/', wrapHandler(postController.index))
+    .get('/create', wrapHandler(postController.create))
+    .post('/', wrapHandler(postController.store))
+    .get('/:id/edit', wrapHandler(postController.edit))
+    .put('/:id', wrapHandler(postController.update))
+    .delete('/:id', wrapHandler(postController.delete))
   )
 ```
 

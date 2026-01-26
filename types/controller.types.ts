@@ -54,6 +54,37 @@ export function getRequestFromContext(ctx: ControllerContext): Request {
   } as Request
 }
 
+/**
+ * Helper function to safely convert Elysia context to ControllerContext
+ * This eliminates the need for `as unknown as ControllerContext` type assertions
+ */
+export function toControllerContext<T = {}>(
+  ctx: any & T
+): ControllerContext & T {
+  return {
+    user: ctx.user,
+    body: ctx.body,
+    query: ctx.query,
+    params: ctx.params,
+    headers: ctx.headers || {},
+    set: ctx.set || { headers: {} },
+    cookie: ctx.cookie,
+    inertia: ctx.inertia,
+    request: ctx.request,
+    ...ctx
+  } as ControllerContext & T
+}
+
+/**
+ * Higher-order function to wrap controller handlers with context conversion
+ * Usage: .get('/path', wrapHandler(controller.method))
+ */
+export function wrapHandler<T extends (...args: any[]) => any>(
+  handler: T
+): (ctx: any) => ReturnType<T> {
+  return (ctx: any) => handler(toControllerContext(ctx))
+}
+
 // Request body types (common ones only)
 export interface UpdateProfileBody {
   name?: string

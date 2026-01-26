@@ -47,25 +47,25 @@ export const uploadController = {
    * - Uploads to storage
    * - Saves metadata to database
    */
-  async uploadImage(ctx: ControllerContext) {
+  async uploadImage({ user, request, set }: ControllerContext) {
     try {
-      if (!ctx.user) {
-        flash.set(ctx.set, 'error', 'Unauthorized')
+      if (!user) {
+        flash.set(set, 'error', 'Unauthorized')
         return Response.redirect('/login', 303)
       }
 
-      const userId = ctx.user.id
-      const formData = await ctx.request.formData()
+      const userId = user.id
+      const formData = await request.formData()
       const file = formData.get('file') as File
 
       if (!file) {
-        flash.set(ctx.set, 'error', 'No file provided')
+        flash.set(set, 'error', 'No file provided')
         return Response.redirect('/upload', 303)
       }
 
       const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
       if (!allowedTypes.includes(file.type)) {
-        flash.set(ctx.set, 'error', `Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed. Got: ${file.type}`)
+        flash.set(set, 'error', `Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed. Got: ${file.type}`)
         return Response.redirect('/upload', 303)
       }
 
@@ -94,12 +94,12 @@ export const uploadController = {
       }
 
       await db.insert(assets).values(uploadedAsset)
-      flash.set(ctx.set, 'success', 'Image uploaded successfully')
-      ctx.set.headers['Content-Type'] = 'application/json'
+      flash.set(set, 'success', 'Image uploaded successfully')
+      set.headers['Content-Type'] = 'application/json'
       return Response.redirect('/upload', 303)
     } catch (error: unknown) {
       console.error('Error uploading image:', error)
-      flash.set(ctx.set, 'error', error instanceof Error ? error.message : 'Error uploading image')
+      flash.set(set, 'error', error instanceof Error ? error.message : 'Error uploading image')
       return Response.redirect('/upload', 303)
     }
   },
@@ -110,19 +110,19 @@ export const uploadController = {
    * - Uploads directly without processing
    * - Saves metadata to database
    */
-  async uploadFile(ctx: ControllerContext) {
+  async uploadFile({ user, request, set }: ControllerContext) {
     try {
-      if (!ctx.user) {
-        flash.set(ctx.set, 'error', 'Unauthorized')
+      if (!user) {
+        flash.set(set, 'error', 'Unauthorized')
         return Response.redirect('/login', 303)
       }
 
-      const userId = ctx.user.id
-      const formData = await ctx.request.formData()
+      const userId = user.id
+      const formData = await request.formData()
       const file = formData.get('file') as File
 
       if (!file) {
-        flash.set(ctx.set, 'error', 'No file provided')
+        flash.set(set, 'error', 'No file provided')
         return Response.redirect('/upload', 303)
       }
 
@@ -137,7 +137,7 @@ export const uploadController = {
       ]
 
       if (!allowedTypes.includes(file.type)) {
-        flash.set(ctx.set, 'error', 'Invalid file type. Allowed types: PDF, Word, Excel, Text, CSV')
+        flash.set(set, 'error', 'Invalid file type. Allowed types: PDF, Word, Excel, Text, CSV')
         return Response.redirect('/upload', 303)
       }
 
@@ -162,12 +162,12 @@ export const uploadController = {
       }
 
       await db.insert(assets).values(uploadedAsset)
-      flash.set(ctx.set, 'success', 'File uploaded successfully')
-      ctx.set.headers['Content-Type'] = 'application/json'
+      flash.set(set, 'success', 'File uploaded successfully')
+      set.headers['Content-Type'] = 'application/json'
       return Response.redirect('/upload', 303)
     } catch (error: unknown) {
       console.error('Error uploading file:', error)
-      flash.set(ctx.set, 'error', error instanceof Error ? error.message : 'Error uploading file')
+      flash.set(set, 'error', error instanceof Error ? error.message : 'Error uploading file')
       return Response.redirect('/upload', 303)
     }
   },
@@ -175,35 +175,35 @@ export const uploadController = {
   /**
    * Delete an uploaded asset
    */
-  async delete(ctx: ControllerContext & { params: { id: string } }) {
+  async delete({ user, params, set }: ControllerContext & { params: { id: string } }) {
     try {
-      if (!ctx.user) {
-        flash.set(ctx.set, 'error', 'Unauthorized')
+      if (!user) {
+        flash.set(set, 'error', 'Unauthorized')
         return Response.redirect('/login', 303)
       }
 
       const asset = await db.query.assets.findFirst({
-        where: eq(assets.id, ctx.params.id)
+        where: eq(assets.id, params.id)
       })
 
       if (!asset) {
-        flash.set(ctx.set, 'error', 'Asset not found')
+        flash.set(set, 'error', 'Asset not found')
         return Response.redirect('/upload', 303)
       }
 
-      if (asset.user_id !== ctx.user.id) {
-        flash.set(ctx.set, 'error', 'You do not have permission to delete this asset')
+      if (asset.user_id !== user.id) {
+        flash.set(set, 'error', 'You do not have permission to delete this asset')
         return Response.redirect('/upload', 303)
       }
 
       await deleteObject(asset.storage_key)
-      await db.delete(assets).where(eq(assets.id, ctx.params.id))
-      flash.set(ctx.set, 'success', 'Asset deleted successfully')
-      ctx.set.headers['Content-Type'] = 'application/json'
+      await db.delete(assets).where(eq(assets.id, params.id))
+      flash.set(set, 'success', 'Asset deleted successfully')
+      set.headers['Content-Type'] = 'application/json'
       return Response.redirect('/upload', 303)
     } catch (error: unknown) {
       console.error('Error deleting asset:', error)
-      flash.set(ctx.set, 'error', error instanceof Error ? error.message : 'Error deleting asset')
+      flash.set(set, 'error', error instanceof Error ? error.message : 'Error deleting asset')
       return Response.redirect('/upload', 303)
     }
   }

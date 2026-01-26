@@ -6,40 +6,40 @@ import type { ControllerContext } from '../../types/controller.types'
  
 
 export const usersController = {
-  async index(ctx: ControllerContext) {
+  async index({ inertia, user }: ControllerContext) {
     const allUsers = await db.query.users.findMany({
       columns: {
         password: false
       }
     })
-    return ctx.inertia('users/index', {
-      auth: { user: ctx.user },
+    return inertia('users/index', {
+      auth: { user },
       users: allUsers
     })
   },
 
-  async create(ctx: ControllerContext) {
-    return ctx.inertia('users/create', {
-      auth: { user: ctx.user }
+  async create({ inertia, user }: ControllerContext) {
+    return inertia('users/create', {
+      auth: { user }
     })
   },
 
-  async store(ctx: ControllerContext & { body: { name: string; email: string; password: string } }) {
+  async store({ body, set }: ControllerContext & { body: { name: string; email: string; password: string } }) {
     try {
-      const { name, email, password } = ctx.body
+      const { name, email, password } = body
 
       if (!name || name.length < 2) {
-        flash.set(ctx.set, 'error', 'Name must be at least 2 characters')
+        flash.set(set, 'error', 'Name must be at least 2 characters')
         return Response.redirect('/users/create', 303)
       }
 
       if (!email || !email.includes('@')) {
-        flash.set(ctx.set, 'error', 'Invalid email')
+        flash.set(set, 'error', 'Invalid email')
         return Response.redirect('/users/create', 303)
       }
 
       if (!password || password.length < 8) {
-        flash.set(ctx.set, 'error', 'Password must be at least 8 characters')
+        flash.set(set, 'error', 'Password must be at least 8 characters')
         return Response.redirect('/users/create', 303)
       }
 
@@ -54,77 +54,77 @@ export const usersController = {
           password: hashedPassword
         })
 
-      flash.set(ctx.set, 'success', 'User created successfully')
-      ctx.set.headers['Content-Type'] = 'application/json'
+      flash.set(set, 'success', 'User created successfully')
+      set.headers['Content-Type'] = 'application/json'
       return Response.redirect('/users', 303)
     } catch (error: unknown) {
-      flash.set(ctx.set, 'error', error instanceof Error ? error.message : 'Failed to create user')
+      flash.set(set, 'error', error instanceof Error ? error.message : 'Failed to create user')
       return Response.redirect('/users/create', 303)
     }
   },
 
-  async show(ctx: ControllerContext & { params: { id: string } }) {
+  async show({ inertia, user, params }: ControllerContext & { params: { id: string } }) {
     try {
-      const targetUser = await this._show(ctx.params.id)
-      return ctx.inertia('users/show', {
-        auth: { user: ctx.user },
+      const targetUser = await this._show(params.id)
+      return inertia('users/show', {
+        auth: { user },
         user: targetUser
       })
     } catch (error: unknown) {
-      return ctx.inertia('errors/404', {
-        auth: { user: ctx.user },
+      return inertia('errors/404', {
+        auth: { user },
         error: error instanceof Error ? error.message : 'User not found'
       })
     }
   },
 
-  async edit(ctx: ControllerContext & { params: { id: string } }) {
+  async edit({ inertia, user, params }: ControllerContext & { params: { id: string } }) {
     try {
-      const targetUser = await this._show(ctx.params.id)
-      return ctx.inertia('users/edit', {
-        auth: { user: ctx.user },
+      const targetUser = await this._show(params.id)
+      return inertia('users/edit', {
+        auth: { user },
         user: targetUser
       })
     } catch (error: unknown) {
-      return ctx.inertia('errors/404', {
-        auth: { user: ctx.user },
+      return inertia('errors/404', {
+        auth: { user },
         error: error instanceof Error ? error.message : 'User not found'
       })
     }
   },
 
-  async update(ctx: ControllerContext & { params: { id: string }; body: { name?: string; email?: string; password?: string } }) {
+  async update({ body, params, set }: ControllerContext & { params: { id: string }; body: { name?: string; email?: string; password?: string } }) {
     try {
       // Inline logic for single-use operation
-      const hashedPassword = ctx.body.password ? await Bun.password.hash(ctx.body.password) : undefined
+      const hashedPassword = body.password ? await Bun.password.hash(body.password) : undefined
       await db
         .update(users)
         .set({
-          name: ctx.body.name,
-          email: ctx.body.email,
+          name: body.name,
+          email: body.email,
           ...(hashedPassword && { password: hashedPassword })
         })
-        .where(eq(users.id, ctx.params.id))
+        .where(eq(users.id, params.id))
 
-      flash.set(ctx.set, 'success', 'User updated successfully')
-      ctx.set.headers['Content-Type'] = 'application/json'
-      return Response.redirect(`/users/${ctx.params.id}`, 303)
+      flash.set(set, 'success', 'User updated successfully')
+      set.headers['Content-Type'] = 'application/json'
+      return Response.redirect(`/users/${params.id}`, 303)
     } catch (error: unknown) {
-      flash.set(ctx.set, 'error', error instanceof Error ? error.message : 'Failed to update user')
-      return Response.redirect(`/users/${ctx.params.id}/edit`, 303)
+      flash.set(set, 'error', error instanceof Error ? error.message : 'Failed to update user')
+      return Response.redirect(`/users/${params.id}/edit`, 303)
     }
   },
 
-  async delete(ctx: ControllerContext & { params: { id: string } }) {
+  async delete({ params, set }: ControllerContext & { params: { id: string } }) {
     try {
       // Inline logic for single-use operation
-      await db.delete(users).where(eq(users.id, ctx.params.id))
+      await db.delete(users).where(eq(users.id, params.id))
 
-      flash.set(ctx.set, 'success', 'User deleted successfully')
-      ctx.set.headers['Content-Type'] = 'application/json'
+      flash.set(set, 'success', 'User deleted successfully')
+      set.headers['Content-Type'] = 'application/json'
       return Response.redirect('/users', 303)
     } catch (error: unknown) {
-      flash.set(ctx.set, 'error', error instanceof Error ? error.message : 'Failed to delete user')
+      flash.set(set, 'error', error instanceof Error ? error.message : 'Failed to delete user')
       return Response.redirect('/users', 303)
     }
   },

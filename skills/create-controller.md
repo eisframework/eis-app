@@ -33,13 +33,13 @@ import { view } from '../services/eta.service'
 
 export const controllerName = {
   // Public methods (routes)
-  async index(ctx: ControllerContext) { },
-  async create(ctx: ControllerContext) { },
-  async store(ctx: ControllerContext & { body: InputType }) { },
-  async show(ctx: ControllerContext & { params: { id: string } }) { },
-  async edit(ctx: ControllerContext & { params: { id: string } }) { },
-  async update(ctx: ControllerContext & { params: { id: string }; body: InputType }) { },
-  async delete(ctx: ControllerContext & { params: { id: string } }) { },
+  async index({ inertia, user }: ControllerContext) { },
+  async create({ inertia, user }: ControllerContext) { },
+  async store({ body, set }: ControllerContext & { body: { name: string; email: string; password: string } }) { },
+  async show({ inertia, user, params }: ControllerContext & { params: { id: string } }) { },
+  async edit({ inertia, user, params }: ControllerContext & { params: { id: string } }) { },
+  async update({ body, params, set }: ControllerContext & { params: { id: string }; body: { name?: string; email?: string } }) { },
+  async delete({ params, set }: ControllerContext & { params: { id: string } }) { },
 
   // Private methods (business logic)
   async _show(id: string) { }
@@ -61,12 +61,12 @@ async about(ctx: ControllerContext) {
 
 ### index() - List
 ```typescript
-async index(ctx: ControllerContext) {
+async index({ inertia, user }: ControllerContext) {
   const items = await db.query.table.findMany({
     columns: { password: false }
   })
-  return ctx.inertia('items/index', {
-    auth: { user: ctx.user },
+  return inertia('items/index', {
+    auth: { user },
     items
   })
 }
@@ -74,32 +74,32 @@ async index(ctx: ControllerContext) {
 
 ### create() - Show Form
 ```typescript
-async create(ctx: ControllerContext) {
-  return ctx.inertia('items/create', {
-    auth: { user: ctx.user }
+async create({ inertia, user }: ControllerContext) {
+  return inertia('items/create', {
+    auth: { user }
   })
 }
 ```
 
 ### store() - Create (302)
 ```typescript
-async store(ctx: ControllerContext & { body: { name: string; email: string; password: string } }) {
+async store({ body, set }: ControllerContext & { body: { name: string; email: string; password: string } }) {
   try {
     // Validate input
-    const { name, email, password } = ctx.body
+    const { name, email, password } = body
 
     if (!name || name.length < 2) {
-      flash.set(ctx.set, 'error', 'Name must be at least 2 characters')
+      flash.set(set, 'error', 'Name must be at least 2 characters')
       return Response.redirect('/items/create', 303)
     }
 
     if (!email || !email.includes('@')) {
-      flash.set(ctx.set, 'error', 'Invalid email')
+      flash.set(set, 'error', 'Invalid email')
       return Response.redirect('/items/create', 303)
     }
 
     if (!password || password.length < 8) {
-      flash.set(ctx.set, 'error', 'Password must be at least 8 characters')
+      flash.set(set, 'error', 'Password must be at least 8 characters')
       return Response.redirect('/items/create', 303)
     }
 
@@ -114,11 +114,11 @@ async store(ctx: ControllerContext & { body: { name: string; email: string; pass
         password: hashedPassword
       })
 
-    flash.set(ctx.set, 'success', 'Item created successfully')
-    ctx.set.headers['Content-Type'] = 'application/json'
+    flash.set(set, 'success', 'Item created successfully')
+    set.headers['Content-Type'] = 'application/json'
     return Response.redirect('/items', 303)
   } catch (error: unknown) {
-    flash.set(ctx.set, 'error', error instanceof Error ? error.message : 'Failed to create item')
+    flash.set(set, 'error', error instanceof Error ? error.message : 'Failed to create item')
     return Response.redirect('/items/create', 303)
   }
 }
@@ -126,16 +126,16 @@ async store(ctx: ControllerContext & { body: { name: string; email: string; pass
 
 ### show() - Single Resource
 ```typescript
-async show(ctx: ControllerContext & { params: { id: string } }) {
+async show({ inertia, user, params }: ControllerContext & { params: { id: string } }) {
   try {
-    const item = await this._show(ctx.params.id)
-    return ctx.inertia('items/show', {
-      auth: { user: ctx.user },
+    const item = await this._show(params.id)
+    return inertia('items/show', {
+      auth: { user },
       item
     })
   } catch (error: unknown) {
-    return ctx.inertia('errors/404', {
-      auth: { user: ctx.user },
+    return inertia('errors/404', {
+      auth: { user },
       error: error instanceof Error ? error.message : 'Item not found'
     })
   }
@@ -144,16 +144,16 @@ async show(ctx: ControllerContext & { params: { id: string } }) {
 
 ### edit() - Show Edit Form
 ```typescript
-async edit(ctx: ControllerContext & { params: { id: string } }) {
+async edit({ inertia, user, params }: ControllerContext & { params: { id: string } }) {
   try {
-    const item = await this._show(ctx.params.id)
-    return ctx.inertia('items/edit', {
-      auth: { user: ctx.user },
+    const item = await this._show(params.id)
+    return inertia('items/edit', {
+      auth: { user },
       item
     })
   } catch (error: unknown) {
-    return ctx.inertia('errors/404', {
-      auth: { user: ctx.user },
+    return inertia('errors/404', {
+      auth: { user },
       error: error instanceof Error ? error.message : 'Item not found'
     })
   }
@@ -162,41 +162,41 @@ async edit(ctx: ControllerContext & { params: { id: string } }) {
 
 ### update() - Update (303)
 ```typescript
-async update(ctx: ControllerContext & { params: { id: string }; body: { name?: string; email?: string } }) {
+async update({ body, params, set }: ControllerContext & { params: { id: string }; body: { name?: string; email?: string } }) {
   try {
     // Inline logic for single-use operation
-    const hashedPassword = ctx.body.password ? await Bun.password.hash(ctx.body.password) : undefined
+    const hashedPassword = body.password ? await Bun.password.hash(body.password) : undefined
     await db
       .update(table)
       .set({
-        name: ctx.body.name,
-        email: ctx.body.email,
+        name: body.name,
+        email: body.email,
         ...(hashedPassword && { password: hashedPassword })
       })
-      .where(eq(table.id, ctx.params.id))
+      .where(eq(table.id, params.id))
 
-    flash.set(ctx.set, 'success', 'Item updated successfully')
-    ctx.set.headers['Content-Type'] = 'application/json'
-    return Response.redirect(`/items/${ctx.params.id}`, 303)
+    flash.set(set, 'success', 'Item updated successfully')
+    set.headers['Content-Type'] = 'application/json'
+    return Response.redirect(`/items/${params.id}`, 303)
   } catch (error: unknown) {
-    flash.set(ctx.set, 'error', error instanceof Error ? error.message : 'Failed to update item')
-    return Response.redirect(`/items/${ctx.params.id}/edit`, 303)
+    flash.set(set, 'error', error instanceof Error ? error.message : 'Failed to update item')
+    return Response.redirect(`/items/${params.id}/edit`, 303)
   }
 }
 ```
 
 ### delete() - Delete (303)
 ```typescript
-async delete(ctx: ControllerContext & { params: { id: string } }) {
+async delete({ params, set }: ControllerContext & { params: { id: string } }) {
   try {
     // Inline logic for single-use operation
-    await db.delete(table).where(eq(table.id, ctx.params.id))
+    await db.delete(table).where(eq(table.id, params.id))
 
-    flash.set(ctx.set, 'success', 'Item deleted successfully')
-    ctx.set.headers['Content-Type'] = 'application/json'
+    flash.set(set, 'success', 'Item deleted successfully')
+    set.headers['Content-Type'] = 'application/json'
     return Response.redirect('/items', 303)
   } catch (error: unknown) {
-    flash.set(ctx.set, 'error', error instanceof Error ? error.message : 'Failed to delete item')
+    flash.set(set, 'error', error instanceof Error ? error.message : 'Failed to delete item')
     return Response.redirect('/items', 303)
   }
 }
@@ -223,38 +223,38 @@ async _show(id: string) {
 ```typescript
 // Required field
 if (!value) {
-  flash.set(ctx.set, 'error', 'Field is required')
+  flash.set(set, 'error', 'Field is required')
   return Response.redirect('/path', 303)
 }
 
 // String length
 if (!value || value.length < 2) {
-  flash.set(ctx.set, 'error', 'Must be at least 2 characters')
+  flash.set(set, 'error', 'Must be at least 2 characters')
   return Response.redirect('/path', 303)
 }
 
 // Email format
 if (!email || !email.includes('@')) {
-  flash.set(ctx.set, 'error', 'Invalid email')
+  flash.set(set, 'error', 'Invalid email')
   return Response.redirect('/path', 303)
 }
 
 // Password minimum length
 if (!password || password.length < 8) {
-  flash.set(ctx.set, 'error', 'Password must be at least 8 characters')
+  flash.set(set, 'error', 'Password must be at least 8 characters')
   return Response.redirect('/path', 303)
 }
 
 // Password confirmation
 if (password !== password_confirmation) {
-  flash.set(ctx.set, 'error', 'Passwords do not match')
+  flash.set(set, 'error', 'Passwords do not match')
   return Response.redirect('/path', 303)
 }
 ```
 
 ### Validation Order
 
-1. Extract values from `ctx.body`
+1. Extract values from `body`
 2. Validate each field
 3. Return early with flash message if invalid
 4. Continue to business logic if all valid
@@ -265,8 +265,8 @@ if (password !== password_confirmation) {
 import { flash } from '../services/flash.service'
 
 // Set flash message
-flash.set(ctx.set, 'error', 'Error message')
-flash.set(ctx.set, 'success', 'Success message')
+flash.set(set, 'error', 'Error message')
+flash.set(set, 'success', 'Success message')
 
 // Redirect after setting flash
 return Response.redirect('/path', 303)
@@ -300,11 +300,11 @@ Use `get`/`post` prefixes for HTTP methods when appropriate:
 
 ```typescript
 export const authController = {
-  async getLogin(ctx: ControllerContext) {
-    return ctx.inertia('auth/login', {})
+  async getLogin({ inertia }: ControllerContext) {
+    return inertia('auth/login', {})
   },
 
-  async postLogin(ctx: ControllerContext & { body: LoginInput }) {
+  async postLogin({ body, set, cookie }: ControllerContext & { body: LoginInput }) {
     // Handle login logic
     return Response.redirect('/home', 303)
   }
@@ -345,13 +345,13 @@ For complex business logic, move it to services:
 import authService from '../services/auth.service'
 
 export const authController = {
-  async postLogin(ctx: ControllerContext & { body: LoginInput }) {
+  async postLogin({ body, set, cookie }: ControllerContext & { body: LoginInput }) {
     try {
-      const result = await authService.login(ctx.body)
-      authService.setAuthCookie(result.token, ctx.cookie!)
+      const { token, user } = await authService.login(body)
+      authService.setAuthCookie(token, cookie!)
       return Response.redirect('/home', 303)
     } catch (error: unknown) {
-      flash.set(ctx.set, 'error', error instanceof Error ? error.message : 'Login failed')
+      flash.set(set, 'error', error instanceof Error ? error.message : 'Login failed')
       return Response.redirect('/login', 303)
     }
   }
@@ -380,10 +380,10 @@ The `authService.setAuthCookie()` method handles:
 
 | Method | Returns | Error Handling | Validation |
 |--------|---------|----------------|------------|
-| index | `ctx.inertia()` | `ctx.inertia('errors/404')` | N/A |
-| create | `ctx.inertia()` | `ctx.inertia('errors/404')` | N/A |
+| index | `inertia()` | `inertia('errors/404')` | N/A |
+| create | `inertia()` | `inertia('errors/404')` | N/A |
 | store | `Response.redirect()` | `flash.set()` + redirect | ✅ Manual validation |
-| show | `ctx.inertia()` | `ctx.inertia('errors/404')` | N/A |
-| edit | `ctx.inertia()` | `ctx.inertia('errors/404')` | N/A |
+| show | `inertia()` | `inertia('errors/404')` | N/A |
+| edit | `inertia()` | `inertia('errors/404')` | N/A |
 | update | `Response.redirect()` | `flash.set()` + redirect | ✅ Manual validation |
 | delete | `Response.redirect()` | `flash.set()` + redirect | N/A |

@@ -67,7 +67,7 @@ bun run dev
 
 ```bash
 # Clone the repository
-git clone <repository-url> my-app
+git clone https://github.com/eisframework/eis-app.git my-app
 cd my-app
 
 # Install dependencies

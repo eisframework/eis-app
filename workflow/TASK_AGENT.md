@@ -7,7 +7,7 @@ This agent is responsible for **executing development tasks** based on the updat
 ## Scope Enforcement
 
 **TASK_AGENT CAN:**
-- ✅ Implement features (create/modify pages, controllers, routes, validators)
+- ✅ Implement features (create/modify pages, controllers, routes)
 - ✅ Fix bugs
 - ✅ Modify existing features
 - ✅ Test locally (unit, integration)
@@ -126,7 +126,7 @@ When MANAGER_AGENT updates PROGRESS.md with new features or changes:
 **Implementation Steps:**
 1. **Read the change context** - Understand WHY the change was made
 2. **Check TDD.md** - See if technical specifications were updated
-3. **Identify affected components** - Pages, controllers, routes, validators
+3. **Identify affected components** - Pages, controllers, routes
 4. **Plan implementation** - Break down into actionable steps
 5. **Execute changes** - Create/modify code following Laju patterns
 6. **Test thoroughly** - Verify implementation matches requirements
@@ -140,9 +140,9 @@ For each feature, ensure:
 - [ ] Check if controller exists in `backend/controllers/`
 - [ ] If exists, modify existing controller (don't create duplicate)
 - [ ] If not, create new controller following `skills/create-controller.md`
-- [ ] Use `db.query.table.findMany()` for database operations
+- [ ] Use `db.query.table.find*()` for database operations
 - [ ] Validate input manually at start of method
-- [ ] Use `flash.set(ctx.set, type, message)` for flash messages
+- [ ] Use `flash.set(set, type, message)` for flash messages
 - [ ] Return proper responses (Inertia for protected routes)
 - [ ] Use `Response.redirect(url, 303)` for redirects
 - [ ] Use `Bun.randomUUIDv7()` for ID generation
@@ -246,25 +246,31 @@ import db from '../database'
 import { eq } from 'drizzle-orm'
 import type { ControllerContext } from '../../types/controller.types'
 import flash from '../services/flash.service'
+import { wrapHandler } from '../../utils/type-helpers'
 
 export const postController = {
-  async index(ctx: ControllerContext) {
+  async index({ inertia, user }: ControllerContext) {
     const posts = await db.query.posts.findMany({
       with: { user: true },
       orderBy: (posts, { desc }) => [desc(posts.createdAt)]
     })
-    return ctx.inertia('posts/index', {
-      auth: { user: ctx.user },
+    return inertia('posts/index', {
+      auth: { user },
       posts
     })
   },
 
-  async store(ctx: ControllerContext & { body: { title: string; content: string } }) {
+  async store({ body, set }: ControllerContext & { body: { title: string; content: string } }) {
     try {
-      const { title, content } = ctx.body
+      const { title, content } = body
 
       if (!title || title.length < 2) {
-        flash.set(ctx.set, 'error', 'Title must be at least 2 characters')
+        flash.set(set, 'error', 'Title must be at least 2 characters')
+        return Response.redirect('/posts/create', 303)
+      }
+
+      if (!content || content.length < 10) {
+        flash.set(set, 'error', 'Content must be at least 10 characters')
         return Response.redirect('/posts/create', 303)
       }
 
@@ -272,16 +278,16 @@ export const postController = {
         id: Bun.randomUUIDv7(),
         title,
         content,
-        userId: ctx.user.id,
+        userId: user.id,
         createdAt: new Date(),
         updatedAt: new Date()
       })
 
-      flash.set(ctx.set, 'success', 'Post created successfully')
-      ctx.set.headers['Content-Type'] = 'application/json'
+      flash.set(set, 'success', 'Post created successfully')
+      set.headers['Content-Type'] = 'application/json'
       return Response.redirect('/posts', 303)
     } catch (error: unknown) {
-      flash.set(ctx.set, 'error', error instanceof Error ? error.message : 'Failed to create post')
+      flash.set(set, 'error', error instanceof Error ? error.message : 'Failed to create post')
       return Response.redirect('/posts/create', 303)
     }
   }
@@ -396,6 +402,7 @@ export const postController = {
 ```typescript
 import { Elysia } from 'elysia'
 import { postController } from "../../controllers/post.controller"
+import { wrapHandler } from '../../utils/type-helpers'
 import authService from '../../services/auth.service'
 
 export const postRoutes = (app: Elysia<any>) => app
@@ -406,12 +413,12 @@ export const postRoutes = (app: Elysia<any>) => app
       if (!user) throw new Error('Unauthorized')
       return { user }
     })
-    .get('/', async (ctx) => await postController.index(ctx as unknown as ControllerContext))
-    .get('/create', async (ctx) => await postController.create(ctx as unknown as ControllerContext))
-    .post('/', async (ctx) => await postController.store(ctx as unknown as ControllerContext & { body: any }))
-    .get('/:id/edit', async (ctx) => await postController.edit(ctx as unknown as ControllerContext & { params: { id: string } }))
-    .put('/:id', async (ctx) => await postController.update(ctx as unknown as ControllerContext & { params: { id: string }; body: any }))
-    .delete('/:id', async (ctx) => await postController.delete(ctx as unknown as ControllerContext & { params: { id: string } }))
+    .get('/', wrapHandler(postController.index))
+    .get('/create', wrapHandler(postController.create))
+    .post('/', wrapHandler(postController.store))
+    .get('/:id/edit', wrapHandler(postController.edit))
+    .put('/:id', wrapHandler(postController.update))
+    .delete('/:id', wrapHandler(postController.delete))
   )
 ```
 
@@ -670,8 +677,8 @@ What needs to be built for selected task?
 ├── New Controller?
 │   ├── Check if controller exists
 │   ├── Create/modify following skills/create-controller.md
-│   ├── Use DB.from() for queries
-│   └── Validate with Validator
+│   ├── Use db.query.table.find*() for queries
+│   └── Validate manually in controller methods
 │
 └── New Route?
     ├── Add to routes/web.ts
@@ -767,7 +774,6 @@ Task Agent should update PROGRESS.md to mark the feature as completed:
 - [x] Pages: index.svelte, form.svelte
 - [x] Controller: FeatureController (index, create, store, edit, update, destroy)
 - [x] Routes: GET /feature, POST /feature, etc.
-- [x] Validator: FeatureValidator
 *Reason: [Original rationale from MANAGER_AGENT]*
 ```
 
@@ -797,7 +803,6 @@ When updating PROGRESS.md after completing a task:
 - [x] Pages: index.svelte, form.svelte
 - [x] Controller: FeatureController (index, create, store, edit, update, destroy)
 - [x] Routes: GET /feature, GET /feature/create, POST /feature, GET /feature/:id/edit, PUT /feature/:id, DELETE /feature/:id
-- [x] Validator: FeatureValidator
 *Reason: [Original rationale from MANAGER_AGENT]*
 ```
 

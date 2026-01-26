@@ -7,24 +7,23 @@ export const publicController = {
     return view.render('index.html')
   },
 
-  async home(ctx: ControllerContext) { 
-    const user = ctx.user;
-    return ctx.inertia('home', { auth: { user } })
+  async home({ inertia, user }: ControllerContext) {
+    return inertia('home', { auth: { user } })
   },
 
-  async about(ctx: ControllerContext) {
+  async about() {
     return view.render('about.html')
   },
 
-  async pricing(ctx: ControllerContext) {
+  async pricing() {
     return view.render('pricing.html')
   },
 
-  async features(ctx: ControllerContext) {
+  async features() {
     return view.render('features.html')
   },
 
-  async contact(ctx: ControllerContext) {
+  async contact() {
     return view.render('contact.html')
   }
 }

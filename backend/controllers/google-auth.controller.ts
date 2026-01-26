@@ -14,7 +14,7 @@ export const googleAuthController = {
   /**
    * Redirect user to Google OAuth login page
    */
-  async getGoogleRedirect(ctx: ControllerContext) {
+  async getGoogleRedirect() {
     const googleAuthUrl = getGoogleAuthURL()
     return Response.redirect(googleAuthUrl, 302)
   },
@@ -22,12 +22,12 @@ export const googleAuthController = {
   /**
    * Handle Google OAuth callback
    */
-  async getGoogleCallback(ctx: ControllerContext & { query: { code?: string } }) {
+  async getGoogleCallback({ query, set, cookie }: ControllerContext & { query: { code?: string } }) {
     try {
-      const { code } = ctx.query
+      const { code } = query
 
       if (!code) {
-        flash.set(ctx.set, 'error', 'Authorization code not provided')
+        flash.set(set, 'error', 'Authorization code not provided')
         return Response.redirect('/login', 302)
       }
 
@@ -35,12 +35,12 @@ export const googleAuthController = {
       const result = await authService.googleCallback(code)
 
       // Set auth cookie
-      authService.setAuthCookie(result.token, ctx.cookie!)
+      authService.setAuthCookie(result.token, cookie!)
 
       return Response.redirect('/home', 303)
 
     } catch (error: unknown) {
-      flash.set(ctx.set, 'error', error instanceof Error ? error.message : 'Google authentication failed')
+      flash.set(set, 'error', error instanceof Error ? error.message : 'Google authentication failed')
       return Response.redirect('/login', 302)
     }
   }
