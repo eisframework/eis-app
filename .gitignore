@@ -14,6 +14,7 @@ bun.lockb
 storage/*
 /.svelte-kit
 /.vercel
+guide
 
 # Database
 data/*

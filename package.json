@@ -1,6 +1,6 @@
 {
   "name": "eis-framework",
-  "version": "1.0.50",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
     "dev": "concurrently \"bun run dev:backend\" \"bun run dev:frontend\"",

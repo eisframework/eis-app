@@ -26,7 +26,34 @@ export const usersController = {
 
   async store(ctx: ControllerContext & { body: { name: string; email: string; password: string } }) {
     try {
-      const newUser = await this._store(ctx.body)
+      const { name, email, password } = ctx.body
+
+      if (!name || name.length < 2) {
+        flash.set(ctx.set, 'error', 'Name must be at least 2 characters')
+        return Response.redirect('/users/create', 303)
+      }
+
+      if (!email || !email.includes('@')) {
+        flash.set(ctx.set, 'error', 'Invalid email')
+        return Response.redirect('/users/create', 303)
+      }
+
+      if (!password || password.length < 8) {
+        flash.set(ctx.set, 'error', 'Password must be at least 8 characters')
+        return Response.redirect('/users/create', 303)
+      }
+
+      // Inline logic for single-use operation
+      const hashedPassword = await Bun.password.hash(password)
+      await db
+        .insert(users)
+        .values({
+          id: Bun.randomUUIDv7(),
+          name,
+          email,
+          password: hashedPassword
+        })
+
       flash.set(ctx.set, 'success', 'User created successfully')
       ctx.set.headers['Content-Type'] = 'application/json'
       return Response.redirect('/users', 303)
@@ -68,7 +95,17 @@ export const usersController = {
 
   async update(ctx: ControllerContext & { params: { id: string }; body: { name?: string; email?: string; password?: string } }) {
     try {
-      await this._update(ctx.params.id, ctx.body)
+      // Inline logic for single-use operation
+      const hashedPassword = ctx.body.password ? await Bun.password.hash(ctx.body.password) : undefined
+      await db
+        .update(users)
+        .set({
+          name: ctx.body.name,
+          email: ctx.body.email,
+          ...(hashedPassword && { password: hashedPassword })
+        })
+        .where(eq(users.id, ctx.params.id))
+
       flash.set(ctx.set, 'success', 'User updated successfully')
       ctx.set.headers['Content-Type'] = 'application/json'
       return Response.redirect(`/users/${ctx.params.id}`, 303)
@@ -80,7 +117,9 @@ export const usersController = {
 
   async delete(ctx: ControllerContext & { params: { id: string } }) {
     try {
-      await this._delete(ctx.params.id)
+      // Inline logic for single-use operation
+      await db.delete(users).where(eq(users.id, ctx.params.id))
+
       flash.set(ctx.set, 'success', 'User deleted successfully')
       ctx.set.headers['Content-Type'] = 'application/json'
       return Response.redirect('/users', 303)
@@ -91,20 +130,6 @@ export const usersController = {
   },
 
   // Private methods for business logic
-  async _store(body: { name: string; email: string; password: string }) {
-    const hashedPassword = await Bun.password.hash(body.password)
-    const [newUser] = await db
-      .insert(users)
-      .values({
-        id: Bun.randomUUIDv7(),
-        name: body.name,
-        email: body.email,
-        password: hashedPassword
-      })
-      .returning()
-    return newUser
-  },
-
   async _show(id: string) {
     const user = await db.query.users.findFirst({
       where: eq(users.id, id),
@@ -114,21 +139,5 @@ export const usersController = {
     })
     if (!user) throw new Error('User not found')
     return user
-  },
-
-  async _update(id: string, body: { name?: string; email?: string; password?: string }) {
-    const hashedPassword = body.password ? await Bun.password.hash(body.password) : undefined
-    await db
-      .update(users)
-      .set({
-        name: body.name,
-        email: body.email,
-        ...(hashedPassword && { password: hashedPassword })
-      })
-      .where(eq(users.id, id))
-  },
-
-  async _delete(id: string) {
-    await db.delete(users).where(eq(users.id, id))
   }
 }

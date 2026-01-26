@@ -6,17 +6,20 @@ This guide is specific to the laju-elysia project using Inertia + Svelte + Drizz
 
 ## Core Principles
 
-1. **Use Inertia for all authenticated routes** - `ctx.inertia('page', props)`
-2. **Flash pattern for errors** - `flash.set(ctx.set, type, message)` + `Response.redirect(url, 303)`
-3. **Separate public/private methods** - Private methods (with `_`) only for:
-   - Complex logic (auth, hashing, token generation)
-   - Code reusable from multiple places
-   - For simple CRUD, use inline logic in public methods
-4. **Use Drizzle ORM** - Import from `../database/schema` and use `db.query.table.find*()`
-5. **Bun.randomUUIDv7() for IDs** - Use `Bun.randomUUIDv7()` for generating IDs
-6. **Controllers are exported objects** - Not classes, use `export const controller = { ... }`
-7. **Use Bun APIs** - Prefer Bun native APIs over Node.js APIs
-8. **Manual validation in controllers** - Validate input at the beginning of each method before business logic
+1. **Use Inertia for authenticated routes** - `ctx.inertia('page', props)`
+2. **Use view.render() for static HTML pages** - `view.render('page.html')`
+3. **Flash pattern for errors** - `flash.set(ctx.set, type, message)` + `Response.redirect(url, 303)`
+4. **Separate public/private methods** - Private methods (with `_`) only for:
+   - Logic used from >1 public method (e.g., `_show()` called by both `show()` and `edit()`)
+   - Complex logic (auth, hashing, token generation, business rules)
+   - For simple CRUD single-use operations, use inline logic in public methods
+5. **Use Drizzle ORM** - Import from `../database/schema` and use `db.query.table.find*()`
+6. **Bun.randomUUIDv7() for IDs** - Use `Bun.randomUUIDv7()` for generating IDs
+7. **Controllers are exported objects** - Not classes, use `export const controller = { ... }`
+8. **Use Bun APIs** - Prefer Bun native APIs over Node.js APIs
+9. **Manual validation in controllers** - Validate input at the beginning of each method before business logic
+10. **Service layer for complex logic** - Move complex business logic to services (e.g., `authService`)
+11. **Method naming conventions** - Use `get`/`post` prefixes for HTTP methods when appropriate
 
 ## Controller Structure
 
@@ -24,9 +27,9 @@ This guide is specific to the laju-elysia project using Inertia + Svelte + Drizz
 import { table } from '../database/schema'
 import db from '../database'
 import { eq } from 'drizzle-orm'
-import { hashPassword } from '../utils/hash.util'
 import type { ControllerContext } from '../../types/controller.types'
-import flash from '../services/flash.service'
+import { flash } from '../services/flash.service'
+import { view } from '../services/eta.service'
 
 export const controllerName = {
   // Public methods (routes)
@@ -39,13 +42,22 @@ export const controllerName = {
   async delete(ctx: ControllerContext & { params: { id: string } }) { },
 
   // Private methods (business logic)
-  async _store(body: InputType) { },
-  async _update(id: string, body: InputType) { },
-  async _delete(id: string) { }
+  async _show(id: string) { }
 }
 ```
 
 ## Method Patterns
+
+### Static Page Rendering (no authentication)
+```typescript
+async landing() {
+  return view.render('index.html')
+}
+
+async about(ctx: ControllerContext) {
+  return view.render('about.html')
+}
+```
 
 ### index() - List
 ```typescript
@@ -91,7 +103,17 @@ async store(ctx: ControllerContext & { body: { name: string; email: string; pass
       return Response.redirect('/items/create', 303)
     }
 
-    const newItem = await this._store(ctx.body)
+    // Inline logic for single-use operation
+    const hashedPassword = await Bun.password.hash(password)
+    await db
+      .insert(table)
+      .values({
+        id: Bun.randomUUIDv7(),
+        name,
+        email,
+        password: hashedPassword
+      })
+
     flash.set(ctx.set, 'success', 'Item created successfully')
     ctx.set.headers['Content-Type'] = 'application/json'
     return Response.redirect('/items', 303)
@@ -142,7 +164,17 @@ async edit(ctx: ControllerContext & { params: { id: string } }) {
 ```typescript
 async update(ctx: ControllerContext & { params: { id: string }; body: { name?: string; email?: string } }) {
   try {
-    await this._update(ctx.params.id, ctx.body)
+    // Inline logic for single-use operation
+    const hashedPassword = ctx.body.password ? await Bun.password.hash(ctx.body.password) : undefined
+    await db
+      .update(table)
+      .set({
+        name: ctx.body.name,
+        email: ctx.body.email,
+        ...(hashedPassword && { password: hashedPassword })
+      })
+      .where(eq(table.id, ctx.params.id))
+
     flash.set(ctx.set, 'success', 'Item updated successfully')
     ctx.set.headers['Content-Type'] = 'application/json'
     return Response.redirect(`/items/${ctx.params.id}`, 303)
@@ -157,7 +189,9 @@ async update(ctx: ControllerContext & { params: { id: string }; body: { name?: s
 ```typescript
 async delete(ctx: ControllerContext & { params: { id: string } }) {
   try {
-    await this._delete(ctx.params.id)
+    // Inline logic for single-use operation
+    await db.delete(table).where(eq(table.id, ctx.params.id))
+
     flash.set(ctx.set, 'success', 'Item deleted successfully')
     ctx.set.headers['Content-Type'] = 'application/json'
     return Response.redirect('/items', 303)
@@ -170,24 +204,7 @@ async delete(ctx: ControllerContext & { params: { id: string } }) {
 
 ## Private Methods
 
-### _store()
-```typescript
-async _store(body: { name: string; email: string; password: string }) {
-  const hashedPassword = await hashPassword(body.password)
-  const [newItem] = await db
-    .insert(table)
-    .values({
-      id: Bun.randomUUIDv7(),
-      name: body.name,
-      email: body.email,
-      password: hashedPassword
-    })
-    .returning()
-  return newItem
-}
-```
-
-### _show()
+### _show() - Used by both show() and edit()
 ```typescript
 async _show(id: string) {
   const item = await db.query.table.findFirst({
@@ -196,28 +213,6 @@ async _show(id: string) {
   })
   if (!item) throw new Error('Item not found')
   return item
-}
-```
-
-### _update()
-```typescript
-async _update(id: string, body: { name?: string; email?: string; password?: string }) {
-  const hashedPassword = body.password ? await hashPassword(body.password) : undefined
-  await db
-    .update(table)
-    .set({
-      name: body.name,
-      email: body.email,
-      ...(hashedPassword && { password: hashedPassword })
-    })
-    .where(eq(table.id, id))
-}
-```
-
-### _delete()
-```typescript
-async _delete(id: string) {
-  await db.delete(table).where(eq(table.id, id))
 }
 ```
 
@@ -267,7 +262,7 @@ if (password !== password_confirmation) {
 ## Flash Message Pattern
 
 ```typescript
-import flash from '../services/flash.service'
+import { flash } from '../services/flash.service'
 
 // Set flash message
 flash.set(ctx.set, 'error', 'Error message')
@@ -283,9 +278,9 @@ return Response.redirect('/path', 303)
 import { table } from '../database/schema'
 import db from '../database'
 import { eq } from 'drizzle-orm'
-import { hashPassword, verifyPassword } from '../utils/hash.util'
 import type { ControllerContext } from '../../types/controller.types'
-import flash from '../services/flash.service'
+import { flash } from '../services/flash.service'
+import { view } from '../services/eta.service'
 ```
 
 ## Bun APIs Reference
@@ -299,6 +294,88 @@ import flash from '../services/flash.service'
 | File write | `Bun.write()` | `await Bun.write(path, buffer)` |
 | Crypto random | `crypto.randomUUID()` | `crypto.randomUUID()` |
 
+## Method Naming Conventions
+
+Use `get`/`post` prefixes for HTTP methods when appropriate:
+
+```typescript
+export const authController = {
+  async getLogin(ctx: ControllerContext) {
+    return ctx.inertia('auth/login', {})
+  },
+
+  async postLogin(ctx: ControllerContext & { body: LoginInput }) {
+    // Handle login logic
+    return Response.redirect('/home', 303)
+  }
+}
+```
+
+## API Response Patterns
+
+For API endpoints that return JSON (not Inertia):
+
+```typescript
+async postImpersonate(ctx: ControllerContext & { body: { userId: string } }) {
+  if (!ctx.user) {
+    ctx.set.status = 401
+    return { error: 'Unauthorized' }
+  }
+
+  if (ctx.user.role !== 'admin') {
+    ctx.set.status = 403
+    return { error: 'Admin only' }
+  }
+
+  try {
+    const result = await authService.impersonate(ctx.body.userId)
+    return Response.json({ user: result.user, token: result.token })
+  } catch (error: unknown) {
+    ctx.set.status = 400
+    return { error: error instanceof Error ? error.message : 'Impersonation failed' }
+  }
+}
+```
+
+## Service Layer Pattern
+
+For complex business logic, move it to services:
+
+```typescript
+import authService from '../services/auth.service'
+
+export const authController = {
+  async postLogin(ctx: ControllerContext & { body: LoginInput }) {
+    try {
+      const result = await authService.login(ctx.body)
+      authService.setAuthCookie(result.token, ctx.cookie!)
+      return Response.redirect('/home', 303)
+    } catch (error: unknown) {
+      flash.set(ctx.set, 'error', error instanceof Error ? error.message : 'Login failed')
+      return Response.redirect('/login', 303)
+    }
+  }
+}
+```
+
+## Cookie Handling Patterns
+
+Use service methods for cookie management:
+
+```typescript
+// Set auth token cookie
+authService.setAuthCookie(result.token, ctx.cookie!)
+
+// Remove auth token cookie
+authService.removeAuthCookie(ctx.cookie!)
+```
+
+The `authService.setAuthCookie()` method handles:
+- Setting cookie value
+- Making it httpOnly
+- Setting path to '/'
+- Setting maxAge to 30 days
+
 ## Quick Reference
 
 | Method | Returns | Error Handling | Validation |
@@ -310,13 +387,3 @@ import flash from '../services/flash.service'
 | edit | `ctx.inertia()` | `ctx.inertia('errors/404')` | N/A |
 | update | `Response.redirect()` | `flash.set()` + redirect | ✅ Manual validation |
 | delete | `Response.redirect()` | `flash.set()` + redirect | N/A |
-
-## Auth Token Pattern (for login/register)
-
-```typescript
-// Set auth token cookie
-ctx.cookie!.auth_token.value = result.token
-ctx.cookie!.auth_token.httpOnly = true
-ctx.cookie!.auth_token.path = '/'
-ctx.cookie!.auth_token.maxAge = 60 * 60 * 24 * 30
-```

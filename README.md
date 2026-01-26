@@ -207,23 +207,7 @@ laju-elysia/
 │   │   └── style.css
 │   └── vite-env.d.ts      # Vite TypeScript declarations
 ├── data/                 # Database files (SQLite)
-├── docs/                 # Documentation
-│   ├── ARCHITECTURE.md   # Architecture overview
-│   ├── CHANGELOG.md      # Version history
-│   ├── CONTRIBUTING.md   # Contribution guidelines
-│   ├── DATABASE.md       # Database guide
-│   ├── FAQ.md           # Frequently asked questions
-│   ├── GETTING_STARTED.md # Quick start guide
-│   ├── QUICK_REFERENCE.md # Quick reference
-│   ├── SSR_WITH_ETA.md   # Server-side rendering with Eta
-│   └── TESTING.md       # Testing guide
 ├── public/               # Static assets
-├── skills/               # Development skill guides
-│   ├── create-controller.md           # Controller creation guide
-│   ├── create-svelte-inertia-page.md # Svelte Inertia page guide
-│   ├── deployment-guide.md            # Deployment instructions
-│   ├── eta-template-engine-ssr.md     # Eta SSR guide
-│   └── testing-guide.md               # Testing guide
 ├── storage/              # File storage (local uploads)
 ├── tests/                # Test files
 │   ├── backend/          # Backend tests
@@ -351,7 +335,7 @@ export const exampleController = {
 
 ### Creating a Controller
 
-Use the skill guide in `skills/create-controller.md` for detailed instructions.
+See the [Controller Guide](https://eisframework.github.io/guide/controllers) for detailed instructions.
 
 ### Database Migrations
 
@@ -380,7 +364,7 @@ bun run test path/to/test.test.ts
 
 ## Deployment
 
-See `skills/deployment-guide.md` for detailed deployment instructions.
+See the [Deployment Guide](https://eisframework.github.io/guide/deployment) for detailed instructions.
 
 ### Production Build
 
@@ -511,12 +495,17 @@ await send(
 
 ## Documentation
 
-- [Getting Started](docs/GETTING_STARTED.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [Database Guide](docs/DATABASE.md)
-- [Testing Guide](docs/TESTING.md)
-- [Quick Reference](docs/QUICK_REFERENCE.md)
-- [FAQ](docs/FAQ.md)
+Full documentation is available at:
+
+https://eisframework.github.io/guide/ 
+
+Key topics:
+- Getting Started
+- Architecture
+- Database Guide
+- Testing Guide
+- Quick Reference
+- FAQ
 
 ## Contributing
 
@@ -526,7 +515,7 @@ await send(
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for detailed guidelines.
+See the [Contributing Guide](https://eisframework.github.io/guide/contributing) for detailed guidelines.
 
 ## License
 
