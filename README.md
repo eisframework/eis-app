@@ -89,13 +89,7 @@ bun run dev
 
 ```bash
 # Start both backend and frontend with hot reload
-bun run dev
-
-# Backend only
-bun run dev:backend
-
-# Frontend only
-bun run dev:frontend
+bun run dev 
 ```
 
 ### Building
@@ -105,10 +99,7 @@ bun run dev:frontend
 bun run build
 
 # Build frontend only
-bun run build:frontend
-
-# Build backend only
-bun run build:backend
+bun run build:frontend 
 ```
 
 ### Testing
@@ -287,11 +278,8 @@ SMTP_PASS=your-smtp-password
 | Command | Description |
 |---------|-------------|
 | `bun run dev` | Start development servers (backend + frontend) |
-| `bun run dev:backend` | Start backend only |
-| `bun run dev:frontend` | Start frontend only |
 | `bun run build` | Build for production |
-| `bun run build:frontend` | Build frontend only |
-| `bun run build:backend` | Build backend only |
+| `bun run build:frontend` | Build frontend only | 
 | `bun run preview` | Preview production build |
 | `bun run test` | Run tests |
 | `bun run test:ui` | Run tests with UI |
