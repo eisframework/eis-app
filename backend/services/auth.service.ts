@@ -390,6 +390,16 @@ export const authService = {
       email: user.email,
       role: user.role
     }
+  },
+
+  /**
+   * Get user from cookie and throw if unauthorized
+   */
+  async getSessionUserFromCookie(cookie: any): Promise<AuthUser> {
+    const token = (cookie?.auth_token?.value as string) || ''
+    const user = await this.getSessionUser(token)
+    if (!user) throw new Error('Unauthorized')
+    return user
   }
 }
 
