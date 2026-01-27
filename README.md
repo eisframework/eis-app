@@ -13,7 +13,7 @@ A modern full-stack framework combining Elysia, Inertia.js and Svelte for buildi
 - **Email** - Multi-adapter email service (Resend & SMTP)
 - **File Upload** - Support for local and S3 storage with image processing
 - **Database** - SQLite with Drizzle ORM and migrations
-- **Testing** - Vitest with coverage support
+- **Testing** - bun:test with coverage support
 - **TailwindCSS** - Utility-first CSS framework
 - **Hot Reload** - Instant development feedback
 
@@ -39,7 +39,7 @@ A modern full-stack framework combining Elysia, Inertia.js and Svelte for buildi
 
 ### Development
 - **Bun** - Fast JavaScript runtime
-- **Vitest** - Unit and integration testing
+- **bun:test** - Unit and integration testing
 - **TypeScript** - Static type checking
 - **ESLint/Prettier** - Code quality tools
 
@@ -222,7 +222,7 @@ laju-elysia/
 ├── svelte.config.js      # Svelte configuration
 ├── tsconfig.json         # TypeScript configuration
 ├── vite.config.ts        # Vite configuration
-└── vitest.config.ts      # Vitest configuration
+└── bun.config.ts         # Bun configuration
 ```
 
 ## Configuration
@@ -337,7 +337,7 @@ bun run db:migrate
 
 ## Testing
 
-The project uses Vitest for testing. Tests are located in the `tests/` directory.
+The project uses bun:test for testing. Tests are located in the `tests/` directory.
 
 ```bash
 # Run all tests

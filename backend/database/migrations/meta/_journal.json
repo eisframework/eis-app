@@ -15,6 +15,13 @@
       "when": 1769270882187,
       "tag": "0001_faithful_natasha_romanoff",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1769440756446,
+      "tag": "0002_woozy_ricochet",
+      "breakpoints": true
     }
   ]
 }

@@ -13,7 +13,7 @@ interface RateLimitStore {
   resetTime: number
 }
 
-const rateLimitStores = new Map<string, RateLimitStore>()
+export const rateLimitStores = new Map<string, RateLimitStore>()
 
 function checkRateLimit(key: string, windowMs: number, maxRequests: number): boolean {
   const now = Date.now()
