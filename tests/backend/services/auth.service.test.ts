@@ -1,12 +1,13 @@
 import { describe, test, expect, beforeEach, afterEach } from 'bun:test'
-import authService from '../../../backend/services/auth.service'
+import { authService } from '../../../backend/services/auth.service'
 import db from '../../../backend/database'
 import { users, sessions, passwordResetTokens } from '../../../backend/database/schema'
 
 // Import rateLimitStores to clear it in tests
 import { rateLimitStores } from '../../../backend/services/auth.service'
 
-describe('Auth Service', () => {
+// Force serial execution for database tests
+describe.serial('Auth Service', () => {
   let testUserId: string
   let testToken: string
 
@@ -14,14 +15,14 @@ describe('Auth Service', () => {
     // Clear rate limit stores
     rateLimitStores.clear()
 
-    // Clean up any existing test data
+    // Clean up any existing test data (delete in correct order due to foreign keys)
     await db.delete(sessions)
     await db.delete(passwordResetTokens)
     await db.delete(users)
   })
 
   afterEach(async () => {
-    // Clean up after each test
+    // Clean up after each test (delete in correct order due to foreign keys)
     await db.delete(sessions)
     await db.delete(passwordResetTokens)
     await db.delete(users)
@@ -222,7 +223,9 @@ describe('Auth Service', () => {
 
   describe('setAuthCookie', () => {
     test('should set auth cookie correctly', () => {
-      const cookie: any = {}
+      const cookie: any = {
+        auth_token: {}
+      }
       const token = 'test-token-123'
 
       authService.setAuthCookie(token, cookie)
@@ -278,8 +281,9 @@ describe('Auth Service', () => {
     test('should not reveal if user exists for non-existent email', async () => {
       const email = 'nonexistent@example.com'
 
-      // Should not throw error
-      await expect(authService.forgotPassword(email)).resolves.toBeUndefined()
+      // Should not throw error and return void
+      const result = await authService.forgotPassword(email)
+      expect(result).toBeUndefined()
     })
 
     test('should enforce rate limiting', async () => {
@@ -315,6 +319,10 @@ describe('Auth Service', () => {
       const user = await db.query.users.findFirst({
         where: (users, { eq }) => eq(users.email, 'test@example.com')
       })
+
+      if (!user) {
+        throw new Error('Test user not found')
+      }
 
       await db.insert(passwordResetTokens).values({
         id: Bun.randomUUIDv7(),

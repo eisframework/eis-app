@@ -161,16 +161,18 @@ For each feature, ensure:
 - [ ] Use Lucide Icons (not FontAwesome)
 
 **Test Creation:**
-- [ ] Create unit tests in `tests/unit/` for new services/controllers
-- [ ] Create integration tests in `tests/integration/` for new routes/endpoints
-- [ ] Use Vitest test framework with `describe`, `it`, `expect` syntax
+- [ ] Create unit tests in `tests/backend/services/` for services
+- [ ] Create unit tests in `tests/backend/controllers/` for controllers
+- [ ] Use Bun Test framework with `describe`, `test`, `expect` syntax
+- [ ] Use named imports (not default) to avoid caching issues
+- [ ] Use `describe.serial` for database-dependent tests
 - [ ] Test success cases AND error cases
-- [ ] Mock external dependencies (database, API calls) when needed
+- [ ] Mock external dependencies (Bun APIs, database) when needed
+- [ ] Clean up database in beforeEach/afterEach (delete in correct order)
 
 **Testing (Local - Recommended):**
-- [ ] Run all tests: `bun run test:run` ✓ WAJIB (runs unit + integration tests)
-- [ ] Optional: Run tests with UI for debugging: `bun run test:ui`
-- [ ] Optional: Check coverage: `bun run test:coverage`
+- [ ] Run all tests: `bun test` ✓ WAJIB
+- [ ] Run tests with coverage: `bun test --coverage`
 - [ ] Manual testing in browser
 - [ ] Check for console errors
 
@@ -425,73 +427,87 @@ export const postRoutes = (app: Elysia<any>) => app
 
 6. **Create Tests**:
 
-**Unit Test** (`tests/unit/post.test.ts`):
+**Service Test** (`tests/backend/services/auth.service.test.ts`):
 ```typescript
-import { describe, it, expect } from 'vitest'
-import { db } from '../../backend/database'
-import { posts } from '../../backend/database/schema'
+import { describe, test, expect, beforeEach, afterEach } from 'bun:test'
+import { authService } from '../../../backend/services/auth.service'
+import db from '../../../backend/database'
+import { users, sessions, passwordResetTokens } from '../../../backend/database/schema'
 
-describe('Post Controller', () => {
-  it('should create a new post', async () => {
-    const postData = {
-      id: Bun.randomUUIDv7(),
-      userId: 'test-user-id',
-      title: 'Test Post',
-      content: 'Test Content'
-    }
-
-    await db.insert(posts).values(postData)
-
-    const post = await db.query.posts.findFirst({
-      where: (posts, { eq }) => eq(posts.id, postData.id)
-    })
-    expect(post).toBeDefined()
-    expect(post?.title).toBe('Test Post')
+describe.serial('Auth Service', () => {
+  beforeEach(async () => {
+    // Clean up any existing test data (delete in correct order due to foreign keys)
+    await db.delete(sessions)
+    await db.delete(passwordResetTokens)
+    await db.delete(users)
   })
 
-  it('should fail on invalid title', async () => {
-    const invalidData = {
-      title: '', // Empty title
-      content: 'Test Content'
-    }
+  afterEach(async () => {
+    // Clean up after each test (delete in correct order due to foreign keys)
+    await db.delete(sessions)
+    await db.delete(passwordResetTokens)
+    await db.delete(users)
+  })
 
-    // Should throw validation error
-    await expect(
-      db.insert(posts).values(invalidData)
-    ).rejects.toThrow()
+  describe('register', () => {
+    test('should register a new user successfully', async () => {
+      const input = {
+        name: 'Test User',
+        email: 'test@example.com',
+        password: 'password123'
+      }
+
+      const result = await authService.register(input)
+
+      expect(result.user).toBeDefined()
+      expect(result.user.name).toBe('Test User')
+      expect(result.user.email).toBe('test@example.com')
+      expect(result.token).toBeDefined()
+    })
+
+    test('should throw error if email already exists', async () => {
+      const input = {
+        name: 'Test User',
+        email: 'test@example.com',
+        password: 'password123'
+      }
+
+      // First registration
+      await authService.register(input)
+
+      // Second registration should fail
+      await expect(authService.register(input)).rejects.toThrow('Email already exists')
+    })
   })
 })
 ```
 
-**Integration Test** (`tests/integration/post.test.ts`):
+**Controller Test** (`tests/backend/controllers/auth.controller.test.ts`):
 ```typescript
-import { describe, it, expect } from 'vitest'
+import { describe, test, expect, beforeEach } from 'bun:test'
+import { authController } from '../../../backend/controllers/auth.controller'
+import type { ControllerContext } from '../../../types/controller.types'
 
-describe('POST /posts - Integration Tests', () => {
-  it('should create post successfully', async () => {
-    const response = await fetch('http://localhost:3000/posts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        title: 'Test Post',
-        content: 'Test Content'
-      })
-    })
+describe('Auth Controller', () => {
+  let mockContext: ControllerContext
 
-    expect(response.status).toBe(303)
+  beforeEach(() => {
+    mockContext = {
+      inertia: vi.fn(),
+      user: { id: 'test-id', email: 'test@example.com' },
+      set: {},
+      cookie: { auth_token: {} }
+    }
   })
 
-  it('should fail with invalid data', async () => {
-    const response = await fetch('http://localhost:3000/posts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        title: '', // Invalid
-        content: ''
+  describe('getLogin', () => {
+    test('should return login page', async () => {
+      await authController.getLogin(mockContext)
+
+      expect(mockContext.inertia).toHaveBeenCalledWith('auth/login', {
+        auth: { user: null }
       })
     })
-
-    expect(response.status).toBe(303)
   })
 })
 ```
