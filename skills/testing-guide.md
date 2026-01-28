@@ -438,3 +438,211 @@ afterEach(() => {
   cleanup()
 })
 ```
+
+---
+
+## Critical: vi.mock Does NOT Work Reliably in Bun Test
+
+### The Problem
+
+**`vi.mock` does NOT work reliably** when `setup.ts` imports the module first. This causes:
+- Tests pass individually (`bun test path/to/file.test.ts`) ✅
+- Tests fail when running all tests (`bun test`) ❌
+
+### Root Cause
+
+1. `setup.ts` is loaded first (via `setupFiles` in config)
+2. `setup.ts` imports database module → module is cached
+3. Test file's `vi.mock('../database')` is hoisted but **module already cached**
+4. Mock doesn't apply → real database operations happen
+5. Data persists to next test file → "Email already registered" errors
+
+### Example of Broken Pattern
+
+```typescript
+// ❌ BROKEN: vi.mock doesn't work when setup.ts imports db first
+import { describe, test, expect, beforeEach, vi } from 'bun:test'
+import { usersController } from '../../../backend/controllers/users.controller'
+
+// This mock will NOT work if setup.ts already imported database
+vi.mock('../../../backend/database', () => ({
+  default: {
+    query: { users: { findMany: vi.fn() } },
+    insert: vi.fn(),
+    delete: vi.fn()
+  }
+}))
+
+describe('Users Controller', () => {
+  // Tests will use REAL database, not mock!
+})
+```
+
+### Solution: Use Real Database with Cleanup
+
+Instead of mocking database, use real database and **clean up after each test**:
+
+```typescript
+// ✅ CORRECT: Use real database with cleanup
+import { describe, test, expect, beforeEach, afterEach, vi } from 'bun:test'
+import { usersController } from '../../../backend/controllers/users.controller'
+import db from '../../../backend/database'
+import { users, sessions, passwordResetTokens } from '../../../backend/database/schema'
+
+describe('Users Controller', () => {
+  let mockContext: any
+
+  beforeEach(() => {
+    mockContext = {
+      user: { id: '1', name: 'Test', email: 'test@example.com' },
+      body: {},
+      params: {},
+      set: { headers: {} },
+      inertia: vi.fn(() => new Response()),
+      request: new Request('http://localhost')
+    }
+    vi.clearAllMocks()
+  })
+
+  // CRITICAL: Clean up database after each test
+  afterEach(async () => {
+    await db.delete(passwordResetTokens)
+    await db.delete(sessions)
+    await db.delete(users)
+  })
+
+  test('should show user page', async () => {
+    // Create test data first
+    const testUserId = 'test-user-id'
+    await db.insert(users).values({
+      id: testUserId,
+      name: 'Test User',
+      email: 'test@example.com',
+      password: 'hashed_password'
+    })
+
+    mockContext.params = { id: testUserId }
+    await usersController.show(mockContext)
+
+    expect(mockContext.inertia).toHaveBeenCalledWith('users/show', expect.any(Object))
+  })
+})
+```
+
+### When vi.mock DOES Work
+
+`vi.mock` works for modules that are **NOT imported by setup.ts**:
+
+```typescript
+// ✅ Works: flash.service is not imported by setup.ts
+vi.mock('../../../backend/services/flash.service', () => ({
+  default: { set: vi.fn() }
+}))
+```
+
+### Summary Table
+
+| Scenario | vi.mock Works? | Solution |
+|----------|----------------|----------|
+| Module imported by setup.ts | ❌ No | Use real module + cleanup |
+| Module NOT imported by setup.ts | ✅ Yes | vi.mock works fine |
+| Database operations | ❌ No | Real DB + beforeEach/afterEach cleanup |
+| External services (flash, etc) | ✅ Yes | vi.mock works |
+
+### Checklist for Controller Tests
+
+- [ ] **DON'T** mock database with vi.mock
+- [ ] **DO** import real database
+- [ ] **DO** add `afterEach` to clean up database
+- [ ] **DO** create test data in each test that needs it
+- [ ] **DO** mock services NOT imported by setup.ts (flash, etc)
+- [ ] **DO** use `vi.clearAllMocks()` in `beforeEach`
+
+---
+
+## Database Instance Isolation
+
+### The Problem with `:memory:` Database
+
+SQLite `:memory:` database creates a **new database per connection**. If `migrate.ts` creates its own connection, migrations run on a different database than tests use.
+
+### Solution: Pass Database Instance to Migrations
+
+**In `backend/database/index.ts`:**
+```typescript
+import { drizzle } from 'drizzle-orm/bun-sqlite'
+import { Database } from 'bun:sqlite'
+import * as schema from './schema'
+
+const dbPath = process.env.DB_PATH || './data/database.sqlite'
+export const sqlite = new Database(dbPath)  // Export sqlite instance
+
+// Skip WAL mode for :memory: databases
+sqlite.exec('PRAGMA foreign_keys = ON')
+if (dbPath !== ':memory:') {
+  sqlite.exec('PRAGMA journal_mode = WAL')
+}
+
+export const db = drizzle(sqlite, { schema })
+export default db
+```
+
+**In `backend/database/migrate.ts`:**
+```typescript
+import { Database } from 'bun:sqlite'
+
+// Accept external database instance
+async function runMigrations(externalDb?: Database) {
+  const dbPath = process.env.DB_PATH || './data/database.sqlite'
+  // Use external db if provided (for tests)
+  const sqlite = externalDb || new Database(dbPath)
+  
+  // Run migrations on this instance...
+}
+
+export { runMigrations }
+```
+
+**In `tests/setup.ts`:**
+```typescript
+// Set DB_PATH BEFORE any imports
+process.env.DB_PATH = ':memory:'
+
+import db, { sqlite } from '../backend/database'
+
+beforeAll(async () => {
+  const { runMigrations } = await import('../backend/database/migrate')
+  // Pass same sqlite instance to ensure migrations run on same database
+  await runMigrations(sqlite)
+})
+```
+
+---
+
+## Global State Cleanup
+
+### Rate Limit Stores
+
+If your service has global state (like rate limiting), clear it in `setup.ts`:
+
+```typescript
+// In setup.ts
+import { rateLimitStores } from '../backend/services/auth.service'
+
+beforeEach(async () => {
+  // Clear rate limit stores
+  rateLimitStores.clear()
+  
+  // Clean database
+  await db.delete(passwordResetTokens)
+  await db.delete(sessions)
+  await db.delete(users)
+})
+```
+
+### Why This Matters
+
+Without clearing global state:
+1. Test A triggers rate limit (3 attempts)
+2. Test B runs → immediately hits rate limit error
+3. Test B fails with "Too many attempts" even though it only tried once

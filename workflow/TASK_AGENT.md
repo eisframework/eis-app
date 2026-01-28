@@ -141,6 +141,10 @@ For each feature, ensure:
 - [ ] If exists, modify existing controller (don't create duplicate)
 - [ ] If not, create new controller following `skills/create-controller.md`
 - [ ] Use `db.query.table.find*()` for database operations
+- [ ] Use `.returning()` for insert/update operations to get the result:
+  ```typescript
+  const [newUser] = await db.insert(users).values({ ... }).returning()
+  ```
 - [ ] Validate input manually at start of method
 - [ ] Use `flash.set(set, type, message)` for flash messages
 - [ ] Return proper responses (Inertia for protected routes)
@@ -160,15 +164,17 @@ For each feature, ensure:
 - [ ] Match UI components from `workflow/ui-kit.html`
 - [ ] Use Lucide Icons (not FontAwesome)
 
-**Test Creation:**
+**Test Creation:** (See `skills/testing-guide.md` for detailed patterns)
 - [ ] Create unit tests in `tests/backend/services/` for services
 - [ ] Create unit tests in `tests/backend/controllers/` for controllers
 - [ ] Use Bun Test framework with `describe`, `test`, `expect` syntax
 - [ ] Use named imports (not default) to avoid caching issues
 - [ ] Use `describe.serial` for database-dependent tests
 - [ ] Test success cases AND error cases
-- [ ] Mock external dependencies (Bun APIs, database) when needed
+- [ ] **DON'T use vi.mock for database** - it doesn't work reliably with setup.ts
+- [ ] **DO use real database with afterEach cleanup** for controller tests
 - [ ] Clean up database in beforeEach/afterEach (delete in correct order)
+- [ ] Clear global state (rateLimitStores, etc.) in beforeEach
 
 **Testing (Local - Recommended):**
 - [ ] Run all tests: `bun test` ✓ WAJIB
@@ -847,6 +853,7 @@ When updating PROGRESS.md after completing a task:
 - `workflow/ui-kit.html` - UI components reference
 - `skills/create-controller.md` - Controller patterns
 - `skills/create-svelte-inertia-page.md` - Page patterns
+- `skills/testing-guide.md` - **Testing patterns & vi.mock pitfalls**
 - `frontend/components/DashboardLayout.svelte` - User dashboard layout
 - `backend/routes/web/` - Route definitions
  

@@ -36,7 +36,7 @@ Uses **Eta** templating engine for server-side rendering.
 
 ### Partials
 ```eta
-<%~ include('partials/header') %>
+<%~ include('partials/header.html') %>
 ```
 
 ### Unescaped Output (Raw HTML)
@@ -71,18 +71,14 @@ Uses **Eta** templating engine for server-side rendering.
 
 ### Asset Helper
 ```html
-<!-- For Inertia pages -->
-<script type="module" src="<%= it.asset('app') %>"></script>
-
-<!-- For landing pages -->
-<script type="module" src="<%= it.asset('index') %>"></script>
-<link rel="stylesheet" href="<%= it.asset('style') %>">
+<script type="module" src="<%= it.asset('js/index.js') %>"></script>
+<link rel="stylesheet" href="<%= it.asset('js/index.css') %>">
 ```
 
 ### Available Assets
-- `app` - Main Inertia application bundle (frontend/entry/app.ts)
-- `index` - Landing page JavaScript (frontend/entry/index.ts)
-- `style` - Global styles (frontend/entry/style.css)
+- `js/app.js` - Main Inertia application bundle
+- `js/index.js` - Landing page JavaScript
+- `js/index.css` - Landing page styles (TailwindCSS v4)
 
 ### Asset Resolution
 - **Development**: Vite dev server with HMR

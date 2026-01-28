@@ -2,11 +2,16 @@ import { Database } from 'bun:sqlite'
 import { readdir } from 'fs/promises'
 import { join } from 'path'
 
-const dbPath = process.env.DB_PATH || './data/database.sqlite'
 const migrationsDir = './backend/database/migrations'
 
-async function runMigrations() {
-  const sqlite = new Database(dbPath)
+// Shared database instance for migrations
+let sharedSqlite: Database | null = null
+
+async function runMigrations(externalDb?: Database) {
+  const dbPath = process.env.DB_PATH || './data/database.sqlite'
+  // Use external db if provided (for tests), otherwise create new connection
+  const sqlite = externalDb || sharedSqlite || new Database(dbPath)
+  if (!externalDb) sharedSqlite = sqlite
 
   // Create migrations tracking table if it doesn't exist
   sqlite.exec(`
@@ -61,5 +66,8 @@ async function runMigrations() {
   sqlite.close()
   console.log('Migrations completed successfully!')
 }
+
+// Export for use in tests
+export { runMigrations }
 
 runMigrations().catch(console.error)

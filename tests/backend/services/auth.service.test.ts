@@ -1,10 +1,7 @@
-import { describe, test, expect, beforeEach, afterEach } from 'bun:test'
-import { authService } from '../../../backend/services/auth.service'
+import { describe, test, expect, beforeEach } from 'bun:test'
+import { authService, rateLimitStores } from '../../../backend/services/auth.service'
 import db from '../../../backend/database'
 import { users, sessions, passwordResetTokens } from '../../../backend/database/schema'
-
-// Import rateLimitStores to clear it in tests
-import { rateLimitStores } from '../../../backend/services/auth.service'
 
 // Force serial execution for database tests
 describe.serial('Auth Service', () => {
@@ -12,19 +9,10 @@ describe.serial('Auth Service', () => {
   let testToken: string
 
   beforeEach(async () => {
-    // Clear rate limit stores
+    // Clear rate limit stores and database before each test
     rateLimitStores.clear()
-
-    // Clean up any existing test data (delete in correct order due to foreign keys)
-    await db.delete(sessions)
     await db.delete(passwordResetTokens)
-    await db.delete(users)
-  })
-
-  afterEach(async () => {
-    // Clean up after each test (delete in correct order due to foreign keys)
     await db.delete(sessions)
-    await db.delete(passwordResetTokens)
     await db.delete(users)
   })
 

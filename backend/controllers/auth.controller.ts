@@ -126,7 +126,9 @@ export const authController = {
       }
 
       const result = await authService.register(body)
+
       authService.setAuthCookie(result.token, cookie!)
+      
       return Response.redirect('/home', 303)
     } catch (error: unknown) {
       flash.set(set, 'error', error instanceof Error ? error.message : 'Registration failed')
