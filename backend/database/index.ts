@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/bun-sqlite'
 import { Database } from 'bun:sqlite'
 import * as schema from './schema'
 
-const dbPath = process.env.DB_PATH || './data/database.sqlite'
+const dbPath = process.env.DB_PATH || './data/dev.sqlite'
 export const sqlite = new Database(dbPath)
 
 // Enable foreign keys and WAL mode

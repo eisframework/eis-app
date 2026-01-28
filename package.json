@@ -14,7 +14,8 @@
     "test:coverage": "bun test --coverage",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "bun run backend/database/migrate.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "refresh": "bun run script/RefreshDatabase.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.975.0",

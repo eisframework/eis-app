@@ -8,7 +8,7 @@ const migrationsDir = './backend/database/migrations'
 let sharedSqlite: Database | null = null
 
 async function runMigrations(externalDb?: Database) {
-  const dbPath = process.env.DB_PATH || './data/database.sqlite'
+  const dbPath = process.env.DB_PATH || './data/dev.sqlite'
   // Use external db if provided (for tests), otherwise create new connection
   const sqlite = externalDb || sharedSqlite || new Database(dbPath)
   if (!externalDb) sharedSqlite = sqlite
