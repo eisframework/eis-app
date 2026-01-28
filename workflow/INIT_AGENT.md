@@ -6,8 +6,6 @@ Panduan lengkap untuk memulai project baru dengan EIS Framework.
 
 **INIT_AGENT CAN:**
 - ✅ Create project infrastructure
-- ✅ Setup GitHub Actions workflow
-- ✅ Setup testing infrastructure
 - ✅ Create documentation (README, PRD, TDD, PROGRESS, ui-kit)
 - ✅ Setup design system
 - ✅ Create layout components
@@ -201,7 +199,7 @@ Update built-in auth pages untuk match design system dari `workflow/ui-kit.html`
 
 ### 13. Setup GitHub Actions Workflow
 
-Setup automated testing dan deployment workflow:
+Setup deployment workflow:
 
 **Copy GitHub Actions workflow:**
 ```bash
@@ -218,11 +216,7 @@ cp -r github-workflow-sample/workflows .github/
    - `SSH_PRIVATE_KEY` - Private key SSH
    - `SLACK_WEBHOOK` - (Opsional) Slack webhook URL
 
-**Testing infrastructure sudah termasuk:**
-- Vitest (unit tests)
-- Testing Library (integration tests)
-
-**Note:** GitHub Actions akan otomatis run tests setiap kali Anda push ke GitHub. Deployment hanya akan terjadi jika semua tests pass.
+**Note:** GitHub Actions akan otomatis deploy ke production setiap kali Anda push ke GitHub.
 
 ### 14. First Commit
 
@@ -249,23 +243,13 @@ Setelah dev server berjalan dengan baik:
 **Workflow setelah initialization:**
 ```
 TASK_AGENT (implement fitur)
-    ↓ Test lokal (opsional)
-    ↓ Push ke GitHub
-    ↓
-GitHub Actions CI (automated testing)
-    ↓ Runs unit, integration, E2E tests
-    ↓
-GitHub Actions CI (automated deployment)
-    ↓ Deploy ke production (hanya jika tests pass)
-    ↓ Run smoke tests
-    ↓ Auto-rollback jika fail
+    ↓ Push ke GitHub 
     ↓
 MANAGER_AGENT (release notes)
     ↓ Update CHANGELOG.md
 ```
 
 **Note:** Referensi:
-- `skills/testing-guide.md` - Panduan menulis test
 - `skills/deployment-guide.md` - Panduan deployment
 
 ## Important Notes
@@ -275,9 +259,7 @@ MANAGER_AGENT (release notes)
 - **Gunakan built-in functionality** - Cek dulu apakah controller/page/service sudah ada sebelum membuat baru
 - **Test sebelum commit** - Pastikan semua berjalan dengan baik sebelum commit
 - **Default PORT** - EIS Framework default PORT adalah 3000 (lihat `.env.example`), user bisa mengganti port di `.env` file jika diperlukan
-- **GitHub Actions Testing** - Tests run otomatis via GitHub Actions CI setiap kali push
-- **Deployment Automation** - Deployment hanya terjadi jika semua tests pass
-- **Auto-rollback** - GitHub Actions akan auto-rollback jika deployment fail
+- **GitHub Actions Deployment** - Deployment otomatis via GitHub Actions setiap kali push
 
 ## API Action Guidelines
 
