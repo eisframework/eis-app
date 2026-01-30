@@ -1,5 +1,5 @@
 import { users, sessions, passwordResetTokens } from '../database/schema'
-import db from '../database'
+import getDb from '../database'
 import { eq, and, gt } from 'drizzle-orm'
 import {
   exchangeCodeForTokens,
@@ -7,6 +7,7 @@ import {
 } from './google-oauth.service'
 import { send } from './resend.service'
 import type { AppCookieStore, ResponseSet } from '../../types/controller.types'
+import { uuidv7 } from 'uuidv7'
 
 interface RateLimitStore {
   count: number
@@ -67,12 +68,12 @@ export const authService = {
    * Create a session for a user
    */
   async createSession(userId: string): Promise<string> {
-    const token = Bun.randomUUIDv7()
+    const token = uuidv7()
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 30)
 
-    await db.insert(sessions).values({
-      id: Bun.randomUUIDv7(),
+    await getDb().insert(sessions).values({
+      id: uuidv7(),
       userId,
       token,
       expiresAt
@@ -116,7 +117,7 @@ export const authService = {
     }
 
     // Check if user already exists
-    const existingUser = await db.query.users.findFirst({
+    const existingUser = await getDb().query.users.findFirst({
       where: eq(users.email, input.email)
     })
 
@@ -125,13 +126,13 @@ export const authService = {
     }
 
     // Hash password
-    const hashedPassword = await Bun.password.hash(input.password)
+    const hashedPassword = await this.hashPassword(input.password)
 
     // Create user
-    const [newUser] = await db
+    const [newUser] = await getDb()
       .insert(users)
       .values({
-        id: Bun.randomUUIDv7(),
+        id: uuidv7(),
         name: input.name,
         email: input.email,
         password: hashedPassword
@@ -163,7 +164,7 @@ export const authService = {
     }
 
     // Find user by email
-    const user = await db.query.users.findFirst({
+    const user = await getDb().query.users.findFirst({
       where: eq(users.email, input.email)
     })
 
@@ -172,7 +173,7 @@ export const authService = {
     }
 
     // Verify password
-    const isValid = await Bun.password.verify(input.password, user.password)
+    const isValid = await this.verifyPassword(input.password, user.password)
 
     if (!isValid) {
       throw new Error('Invalid credentials')
@@ -202,7 +203,7 @@ export const authService = {
     const googleUser = await getGoogleUserInfo(access_token)
 
     // Check if user already exists
-    const existingUser = await db.query.users.findFirst({
+    const existingUser = await getDb().query.users.findFirst({
       where: eq(users.email, googleUser.email.toLowerCase())
     })
 
@@ -221,12 +222,12 @@ export const authService = {
     }
 
     // Create new user
-    const randomPassword = Bun.randomUUIDv7().replace(/-/g, '')
-    const hashedPassword = await Bun.password.hash(randomPassword)
-    const [newUser] = await db
+    const randomPassword = uuidv7().replace(/-/g, '')
+    const hashedPassword = await this.hashPassword(randomPassword)
+    const [newUser] = await getDb()
       .insert(users)
       .values({
-        id: Bun.randomUUIDv7(),
+        id: uuidv7(),
         name: googleUser.name,
         email: googleUser.email.toLowerCase(),
         password: hashedPassword,
@@ -251,7 +252,7 @@ export const authService = {
    * Logout user
    */
   async logout(token: string): Promise<void> {
-    await db.delete(sessions).where(eq(sessions.token, token))
+    await getDb().delete(sessions).where(eq(sessions.token, token))
   },
 
   /**
@@ -260,7 +261,7 @@ export const authService = {
    */
   async impersonate(userId: string): Promise<AuthResult> {
     // Find user
-    const user = await db.query.users.findFirst({
+    const user = await getDb().query.users.findFirst({
       where: eq(users.id, userId)
     })
 
@@ -291,7 +292,7 @@ export const authService = {
       throw new Error('Too many password reset attempts. Please try again later.')
     }
 
-    const user = await db.query.users.findFirst({
+    const user = await getDb().query.users.findFirst({
       where: eq(users.email, email)
     })
 
@@ -301,14 +302,14 @@ export const authService = {
     }
 
     // Delete any existing reset tokens for this user
-    await db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, user.id))
+    await getDb().delete(passwordResetTokens).where(eq(passwordResetTokens.userId, user.id))
 
     // Create new reset token
     const token = Bun.randomUUIDv7()
     const expiresAt = new Date()
     expiresAt.setHours(expiresAt.getHours() + 1) // 1 hour expiry
 
-    await db.insert(passwordResetTokens).values({
+    await getDb().insert(passwordResetTokens).values({
       id: Bun.randomUUIDv7(),
       userId: user.id,
       token,
@@ -338,7 +339,7 @@ export const authService = {
   async resetPassword(token: string, newPassword: string): Promise<void> {
     // Find valid reset token
     const now = new Date()
-    const resetToken = await db.query.passwordResetTokens.findFirst({
+    const resetToken = await getDb().query.passwordResetTokens.findFirst({
       where: and(
         eq(passwordResetTokens.token, token),
         gt(passwordResetTokens.expiresAt, now)
@@ -350,16 +351,16 @@ export const authService = {
     }
 
     // Hash new password
-    const hashedPassword = await Bun.password.hash(newPassword)
+    const hashedPassword = await this.hashPassword(newPassword)
 
     // Update user password
-    await db
+    await getDb()
       .update(users)
       .set({ password: hashedPassword })
       .where(eq(users.id, resetToken.userId))
 
     // Delete the used token
-    await db.delete(passwordResetTokens).where(eq(passwordResetTokens.id, resetToken.id))
+    await getDb().delete(passwordResetTokens).where(eq(passwordResetTokens.id, resetToken.id))
   },
 
   /**
@@ -368,7 +369,7 @@ export const authService = {
   async getSessionUser(token: string): Promise<AuthUser | null> {
     if (!token) return null
 
-    const session = await db.query.sessions.findFirst({
+    const session = await getDb().query.sessions.findFirst({
       where: eq(sessions.token, token),
       with: {
         user: true
@@ -379,7 +380,7 @@ export const authService = {
 
     // Check if session is expired
     if (new Date(session.expiresAt) < new Date()) {
-      await db.delete(sessions).where(eq(sessions.token, token))
+      await getDb().delete(sessions).where(eq(sessions.token, token))
       return null
     }
 
@@ -390,6 +391,31 @@ export const authService = {
       email: user.email,
       role: user.role
     }
+  },
+
+  /**
+   * Hash password using Web Crypto API
+   */
+  async hashPassword(password: string): Promise<string> {
+    const encoder = new TextEncoder()
+    const data = encoder.encode(password)
+    const hash = await crypto.subtle.digest('SHA-256', data)
+    return Array.from(new Uint8Array(hash))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
+  },
+
+  /**
+   * Verify password using Web Crypto API
+   */
+  async verifyPassword(password: string, hash: string): Promise<boolean> {
+    const encoder = new TextEncoder()
+    const data = encoder.encode(password)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+    const computedHash = Array.from(new Uint8Array(hashBuffer))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
+    return computedHash === hash
   },
 
   /**

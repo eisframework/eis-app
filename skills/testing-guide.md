@@ -1,5 +1,183 @@
 # Testing Guide
 
+## When to Use E2E vs Bun Test
+
+### Decision Matrix
+
+| Scenario | Use Bun Test | Use E2E (Playwright) |
+|----------|--------------|----------------------|
+| Testing service logic (business rules) | ✅ Primary | ❌ No |
+| Testing controller responses | ✅ Primary | ❌ No |
+| Testing database operations | ✅ Primary | ❌ No |
+| Testing form validation | ✅ Primary | ❌ No |
+| Testing API endpoints (without UI) | ✅ Primary | ❌ No |
+| Testing user flows across multiple pages | ❌ No | ✅ Primary |
+| Testing browser-specific behavior (localStorage, cookies) | ⚠️ Limited | ✅ Primary |
+| Testing visual rendering | ❌ No | ✅ Primary |
+| Testing authentication flows with real browser | ❌ No | ✅ Primary |
+| Testing file uploads | ❌ No | ✅ Primary |
+| Testing real-time interactions (WebSocket, SSE) | ❌ No | ✅ Primary |
+
+### Bun Test: When to Use
+
+**Use `bun:test` for:**
+
+1. **Unit Tests** - Testing individual functions/classes in isolation
+   - Service layer logic (auth, user management)
+   - Utility functions
+   - Data transformations
+
+2. **Integration Tests** - Testing how components work together
+   - Controller → Service → Database flow
+   - API endpoint responses
+   - Form validation logic
+
+3. **Fast Feedback** - When you need quick results during development
+   - TDD workflow
+   - CI/CD pipelines (run first, fail fast)
+
+4. **Deterministic Tests** - When you need 100% reproducible results
+   - No browser dependencies
+   - No network flakiness
+   - No timing issues
+
+**Example: Testing Service Logic**
+```typescript
+import { describe, test, expect } from 'bun:test'
+import { authService } from '../../../backend/services/auth.service'
+
+describe('AuthService', () => {
+  test('should hash password correctly', async () => {
+    const hash = await authService.hashPassword('password123')
+    expect(hash).toBeDefined()
+    expect(hash).not.toBe('password123')
+  })
+})
+```
+
+### E2E Testing: When to Use
+
+**Use E2E (Playwright) for:**
+
+1. **User Journey Testing** - Testing complete workflows
+   - Login → Dashboard → Logout
+   - Registration → Email verification → First login
+   - Multi-step forms
+
+2. **Browser-Specific Features**
+   - localStorage/sessionStorage
+   - Cookies management
+   - Browser history/navigation
+   - File uploads/downloads
+
+3. **Visual Regression**
+   - Page layout verification
+   - Responsive design testing
+   - Component rendering
+
+4. **Real User Scenarios**
+   - Testing with real browser engine
+   - Network conditions
+   - Cross-browser compatibility
+
+**Example: Testing Login Flow**
+```typescript
+import { test, expect } from '@playwright/test'
+
+test('user can login and see dashboard', async ({ page }) => {
+  await page.goto('/login')
+  await page.fill('input[name="email"]', 'test@example.com')
+  await page.fill('input[name="password"]', 'password123')
+  await page.click('button[type="submit"]')
+  
+  await expect(page).toHaveURL('/dashboard')
+  await expect(page.locator('h1')).toContainText('Dashboard')
+})
+```
+
+### Testing Strategy Pyramid
+
+```
+        /\
+       /E2E\      ← Few tests (critical user journeys)
+      /------\
+     /Integration\  ← Medium tests (API, controller flows)
+    /------------\
+   /   Unit Tests \  ← Many tests (service logic, utilities)
+  /----------------\
+```
+
+**Rule of Thumb:**
+- **70%** Bun Test (unit + integration)
+- **20%** Component tests (Svelte components)
+- **10%** E2E tests (critical user journeys)
+
+### Common Mistakes
+
+**❌ Don't use E2E for:**
+- Testing business rules (e.g., password hashing logic)
+- Testing form validation (can be tested with unit tests)
+- Testing API response formats (use integration tests)
+- Testing database queries (use unit tests with real DB)
+
+**❌ Don't use Bun Test for:**
+- Testing browser-specific behavior (localStorage, cookies)
+- Testing visual rendering
+- Testing complex user flows across multiple pages
+- Testing file uploads with real browser
+
+### Example: Same Feature Tested Both Ways
+
+**Feature: User Registration**
+
+**Bun Test (Service Logic)**
+```typescript
+test('should register user with valid data', async () => {
+  const user = await authService.register({
+    name: 'Test User',
+    email: 'test@example.com',
+    password: 'password123'
+  })
+  
+  expect(user).toBeDefined()
+  expect(user.email).toBe('test@example.com')
+})
+```
+
+**E2E Test (User Journey)**
+```typescript
+test('user can register through form', async ({ page }) => {
+  await page.goto('/register')
+  await page.fill('input[name="name"]', 'Test User')
+  await page.fill('input[name="email"]', 'test@example.com')
+  await page.fill('input[name="password"]', 'password123')
+  await page.fill('input[name="password_confirmation"]', 'password123')
+  await page.click('button[type="submit"]')
+  
+  await expect(page).toHaveURL('/dashboard')
+  await expect(page.locator('.flash-message')).toContainText('Registration successful')
+})
+```
+
+### Quick Decision Flow
+
+```
+Is this a user journey across multiple pages?
+├─ Yes → Use E2E
+└─ No
+    ├─ Does it involve browser-specific features (localStorage, cookies)?
+    │   ├─ Yes → Use E2E
+    │   └─ No
+    │       ├─ Is it testing business logic/service rules?
+    │       │   └─ Yes → Use Bun Test
+    │       ├─ Is it testing API/controller responses?
+    │       │   └─ Yes → Use Bun Test
+    │       └─ Is it testing form validation?
+    │           └─ Yes → Use Bun Test
+```
+
+---
+
 ## AI Agent Guide: Creating Unit Tests
 
 ### When AI Agent Creates Tests

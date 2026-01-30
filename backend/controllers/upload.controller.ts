@@ -1,22 +1,11 @@
 import { assets } from '../database/schema'
-import db from '../database'
+import getDb from '../database'
 import { eq } from 'drizzle-orm'
 import sharp from 'sharp'
 import type { ControllerContext } from '../../types/controller.types'
 import flash from '../services/flash.service'
-import { deleteObject } from '../services/storage.service'
-
-// Storage Service Selection:
-// To switch between S3 and Local Storage, change the import below:
-//
-// Local Storage:
-import { getPublicUrl, uploadBuffer } from '../services/storage.service'
-//
-// S3 Storage:
-// import { getPublicUrl, uploadBuffer } from '../services/s3.service'
-//
-// Both services have the same API, making it easy to switch between them.
-// Local Storage is recommended for development, S3 for production.
+import { getPublicUrl, uploadBuffer, deleteObject } from '../services/s3.service'
+import { uuidv7 } from 'uuidv7'
 
 // Mime type map for common image types
 const MIME_TYPES: Record<string, string> = {
@@ -69,7 +58,7 @@ export const uploadController = {
         return Response.redirect('/upload', 303)
       }
 
-      const id = Bun.randomUUIDv7()
+      const id = uuidv7()
       const fileName = `${id}.webp`
 
       const buffer = await file.arrayBuffer()
@@ -93,7 +82,7 @@ export const uploadController = {
         storage_key: storageKey
       }
 
-      await db.insert(assets).values(uploadedAsset)
+      await getDb().insert(assets).values(uploadedAsset)
       flash.set(set, 'success', 'Image uploaded successfully')
       set.headers['Content-Type'] = 'application/json'
       return Response.redirect('/upload', 303)
@@ -141,7 +130,7 @@ export const uploadController = {
         return Response.redirect('/upload', 303)
       }
 
-      const id = Bun.randomUUIDv7()
+      const id = uuidv7()
       const ext = file.name.split('.').pop() || 'bin'
       const fileName = `${id}.${ext}`
 
@@ -161,7 +150,7 @@ export const uploadController = {
         storage_key: storageKey
       }
 
-      await db.insert(assets).values(uploadedAsset)
+      await getDb().insert(assets).values(uploadedAsset)
       flash.set(set, 'success', 'File uploaded successfully')
       set.headers['Content-Type'] = 'application/json'
       return Response.redirect('/upload', 303)
@@ -182,7 +171,7 @@ export const uploadController = {
         return Response.redirect('/login', 303)
       }
 
-      const asset = await db.query.assets.findFirst({
+      const asset = await getDb().query.assets.findFirst({
         where: eq(assets.id, params.id)
       })
 
@@ -197,7 +186,7 @@ export const uploadController = {
       }
 
       await deleteObject(asset.storage_key)
-      await db.delete(assets).where(eq(assets.id, params.id))
+      await getDb().delete(assets).where(eq(assets.id, params.id))
       flash.set(set, 'success', 'Asset deleted successfully')
       set.headers['Content-Type'] = 'application/json'
       return Response.redirect('/upload', 303)
