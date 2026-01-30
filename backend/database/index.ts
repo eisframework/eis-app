@@ -1,23 +1,23 @@
-import { Kysely, SqliteDialect, sql } from 'kysely'
+import { Kysely, sql } from 'kysely'
 import { D1Dialect } from 'kysely-d1'
-import { Database } from './types'
+import { Database as DB } from './types'
+import { Database } from 'bun:sqlite'
 
 const dbPath = process.env.DB_PATH || './data/dev.sqlite'
 
-let db: Kysely<Database> | null = null
+let db: Kysely<DB> | null = null
 
-export function getDb(d1Binding?: any): Kysely<Database> {
+export function getDb(d1Binding?: any): Kysely<DB> {
   if (d1Binding) {
-    return new Kysely<Database>({
+    return new Kysely<DB>({
       dialect: new D1Dialect({ database: d1Binding })
     })
   }
 
   if (!db) {
-    db = new Kysely<Database>({
-      dialect: new SqliteDialect({
-        database: new (require('better-sqlite3').Database)(dbPath)
-      })
+    const sqlite = new Database(dbPath)
+    db = new Kysely<DB>({
+      dialect: new D1Dialect({ database: sqlite })
     })
 
     // Enable foreign keys
