@@ -1,17 +1,17 @@
-import { users } from '../database/schema'
-import db from '../database'
-import { eq } from 'drizzle-orm'
+import getDb from '../database'
 import { flash } from '../services/flash.service'
+import authService from '../services/auth.service'
+import { uuidv7 } from 'uuidv7'
 import type { ControllerContext } from '../../types/controller.types'
  
 
 export const usersController = {
   async index({ inertia, user }: ControllerContext) {
-    const allUsers = await db.query.users.findMany({
-      columns: {
-        password: false
-      }
-    })
+    const allUsers = await getDb()
+      .selectFrom('users')
+      .selectAll()
+      .where('password', 'is not', null)
+      .execute()
     return inertia('users/index', {
       auth: { user },
       users: allUsers
@@ -44,15 +44,17 @@ export const usersController = {
       }
 
       // Inline logic for single-use operation
-      const hashedPassword = await Bun.password.hash(password)
-      await db
-        .insert(users)
+      const hashedPassword = await authService.hashPassword(password)
+      await getDb()
+        .insertInto('users')
         .values({
-          id: Bun.randomUUIDv7(),
+          id: uuidv7(),
           name,
           email,
-          password: hashedPassword
+          password: hashedPassword,
+          role: 'user'
         })
+        .execute()
 
       flash.set(set, 'success', 'User created successfully')
       set.headers['Content-Type'] = 'application/json'
@@ -96,15 +98,16 @@ export const usersController = {
   async update({ body, params, set }: ControllerContext & { params: { id: string }; body: { name?: string; email?: string; password?: string } }) {
     try {
       // Inline logic for single-use operation
-      const hashedPassword = body.password ? await Bun.password.hash(body.password) : undefined
-      await db
-        .update(users)
+      const hashedPassword = body.password ? await authService.hashPassword(body.password) : undefined
+      await getDb()
+        .updateTable('users')
         .set({
           name: body.name,
           email: body.email,
           ...(hashedPassword && { password: hashedPassword })
         })
-        .where(eq(users.id, params.id))
+        .where('id', '=', params.id)
+        .execute()
 
       flash.set(set, 'success', 'User updated successfully')
       set.headers['Content-Type'] = 'application/json'
@@ -118,7 +121,10 @@ export const usersController = {
   async delete({ params, set }: ControllerContext & { params: { id: string } }) {
     try {
       // Inline logic for single-use operation
-      await db.delete(users).where(eq(users.id, params.id))
+      await getDb()
+        .deleteFrom('users')
+        .where('id', '=', params.id)
+        .execute()
 
       flash.set(set, 'success', 'User deleted successfully')
       set.headers['Content-Type'] = 'application/json'
@@ -131,12 +137,11 @@ export const usersController = {
 
   // Private methods for business logic
   async _show(id: string) {
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, id),
-      columns: {
-        password: false
-      }
-    })
+    const user = await getDb()
+      .selectFrom('users')
+      .selectAll()
+      .where('id', '=', id)
+      .executeTakeFirst()
     if (!user) throw new Error('User not found')
     return user
   }

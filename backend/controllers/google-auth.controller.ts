@@ -1,6 +1,4 @@
-import { users, sessions } from '../database/schema'
-import db from '../database'
-import { eq } from 'drizzle-orm'
+import getDb from '../database'
 import type { ControllerContext } from '../../types/controller.types'
 import flash from '../services/flash.service'
 import authService from '../services/auth.service'

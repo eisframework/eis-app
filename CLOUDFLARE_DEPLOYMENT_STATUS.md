@@ -65,7 +65,7 @@ wrangler dev
 
 ## Known Issues
 
-Ada beberapa TypeScript errors yang muncul karena type inference issues dengan Drizzle ORM. Ini tidak akan mempengaruhi runtime, tapi perlu diperbaiki:
+Ada beberapa TypeScript errors yang muncul karena type inference issues dengan Kysely ORM. Ini tidak akan mempengaruhi runtime, tapi perlu diperbaiki:
 
 1. Database schema types tidak terdeteksi dengan benar
 2. Worker.ts memiliki beberapa type errors
