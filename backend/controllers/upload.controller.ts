@@ -1,6 +1,4 @@
-import { assets } from '../database/schema'
 import getDb from '../database'
-import { eq } from 'drizzle-orm'
 import sharp from 'sharp'
 import type { ControllerContext } from '../../types/controller.types'
 import flash from '../services/flash.service'
@@ -82,7 +80,10 @@ export const uploadController = {
         storage_key: storageKey
       }
 
-      await getDb().insert(assets).values(uploadedAsset)
+      await getDb()
+        .insertInto('assets')
+        .values(uploadedAsset)
+        .execute()
       flash.set(set, 'success', 'Image uploaded successfully')
       set.headers['Content-Type'] = 'application/json'
       return Response.redirect('/upload', 303)
@@ -150,7 +151,10 @@ export const uploadController = {
         storage_key: storageKey
       }
 
-      await getDb().insert(assets).values(uploadedAsset)
+      await getDb()
+        .insertInto('assets')
+        .values(uploadedAsset)
+        .execute()
       flash.set(set, 'success', 'File uploaded successfully')
       set.headers['Content-Type'] = 'application/json'
       return Response.redirect('/upload', 303)
@@ -171,9 +175,11 @@ export const uploadController = {
         return Response.redirect('/login', 303)
       }
 
-      const asset = await getDb().query.assets.findFirst({
-        where: eq(assets.id, params.id)
-      })
+      const asset = await getDb()
+        .selectFrom('assets')
+        .selectAll()
+        .where('assets.id', '=', params.id)
+        .executeTakeFirst()
 
       if (!asset) {
         flash.set(set, 'error', 'Asset not found')
@@ -186,7 +192,10 @@ export const uploadController = {
       }
 
       await deleteObject(asset.storage_key)
-      await getDb().delete(assets).where(eq(assets.id, params.id))
+      await getDb()
+        .deleteFrom('assets')
+        .where('assets.id', '=', params.id)
+        .execute()
       flash.set(set, 'success', 'Asset deleted successfully')
       set.headers['Content-Type'] = 'application/json'
       return Response.redirect('/upload', 303)

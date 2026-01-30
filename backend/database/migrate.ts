@@ -1,21 +1,16 @@
-import { Database } from 'bun:sqlite'
 import { readdir } from 'fs/promises'
 import { join } from 'path'
+import { Database } from 'bun:sqlite'
 
 const migrationsDir = './backend/database/migrations'
 
-// Shared database instance for migrations
-let sharedSqlite: Database | null = null
-
-async function runMigrations(externalDb?: Database) {
+async function runMigrations() {
   const dbPath = process.env.DB_PATH || './data/dev.sqlite'
-  // Use external db if provided (for tests), otherwise create new connection
-  const sqlite = externalDb || sharedSqlite || new Database(dbPath)
-  if (!externalDb) sharedSqlite = sqlite
+  const db = new Database(dbPath)
 
   // Create migrations tracking table if it doesn't exist
-  sqlite.exec(`
-    CREATE TABLE IF NOT EXISTS _drizzle_migrations (
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS _kysely_migrations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       hash TEXT NOT NULL UNIQUE,
       created_at INTEGER DEFAULT (unixepoch()) NOT NULL
@@ -34,7 +29,7 @@ async function runMigrations(externalDb?: Database) {
 
     // Check if migration already ran
     const hash = Buffer.from(content).toString('base64').substring(0, 32)
-    const existing = sqlite.query('SELECT * FROM _drizzle_migrations WHERE hash = ?').get(hash)
+    const existing = db.query('SELECT * FROM _kysely_migrations WHERE hash = ?').get(hash)
 
     if (existing) {
       console.log(`Skipping ${file} (already applied)`)
@@ -49,7 +44,7 @@ async function runMigrations(externalDb?: Database) {
       const trimmed = statement.trim()
       if (trimmed) {
         try {
-          sqlite.exec(trimmed)
+          db.exec(trimmed)
         } catch (error: any) {
           console.error(`Error executing statement: ${trimmed.substring(0, 100)}...`)
           console.error(error.message)
@@ -59,15 +54,12 @@ async function runMigrations(externalDb?: Database) {
     }
 
     // Mark migration as run
-    sqlite.query('INSERT INTO _drizzle_migrations (hash) VALUES (?)').run(hash)
+    db.query('INSERT INTO _kysely_migrations (hash) VALUES (?)').run(hash)
     console.log(`Applied ${file}`)
   }
 
-  sqlite.close()
+  db.close()
   console.log('Migrations completed successfully!')
 }
-
-// Export for use in tests
-export { runMigrations }
 
 runMigrations().catch(console.error)

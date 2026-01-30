@@ -1,41 +1,40 @@
-import { drizzle } from 'drizzle-orm/bun-sqlite'
-import { drizzle as drizzleD1 } from 'drizzle-orm/d1'
-import { Database } from 'bun:sqlite'
-import * as schema from './schema'
+import { Kysely, SqliteDialect, sql } from 'kysely'
+import { D1Dialect } from 'kysely-d1'
+import { Database } from './types'
 
 const dbPath = process.env.DB_PATH || './data/dev.sqlite'
 
-// Check if running in Cloudflare Workers (D1) or locally (SQLite)
-const isCloudflare = process.env.CLOUDFLARE_ENV === 'production'
+let db: Kysely<Database> | null = null
 
-let db: ReturnType<typeof drizzle> | null = null
-let sqlite: Database | null = null
-
-export function getDb(d1Binding?: any) {
+export function getDb(d1Binding?: any): Kysely<Database> {
   if (d1Binding) {
-    return drizzleD1(d1Binding, { schema })
+    return new Kysely<Database>({
+      dialect: new D1Dialect({ database: d1Binding })
+    })
   }
 
   if (!db) {
-    // Local SQLite database
-    sqlite = new Database(dbPath)
+    db = new Kysely<Database>({
+      dialect: new SqliteDialect({
+        database: new (require('better-sqlite3').Database)(dbPath)
+      })
+    })
 
-    // Enable foreign keys and WAL mode
-    sqlite.exec('PRAGMA foreign_keys = ON')
+    // Enable foreign keys
+    sql`PRAGMA foreign_keys = ON`.execute(db)
     // WAL mode not supported for :memory: databases
     if (dbPath !== ':memory:') {
-      sqlite.exec('PRAGMA journal_mode = WAL')
+      sql`PRAGMA journal_mode = WAL`.execute(db)
     }
-
-    db = drizzle(sqlite, { schema })
   }
 
   return db
 }
 
 export function closeDatabase() {
-  if (sqlite) {
-    sqlite.close()
+  if (db) {
+    db.destroy()
+    db = null
   }
 }
 

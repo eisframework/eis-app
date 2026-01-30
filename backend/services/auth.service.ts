@@ -1,6 +1,4 @@
-import { users, sessions, passwordResetTokens } from '../database/schema'
 import getDb from '../database'
-import { eq, and, gt } from 'drizzle-orm'
 import {
   exchangeCodeForTokens,
   getGoogleUserInfo,
@@ -72,12 +70,15 @@ export const authService = {
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 30)
 
-    await getDb().insert(sessions).values({
-      id: uuidv7(),
-      userId,
-      token,
-      expiresAt
-    })
+    await getDb()
+      .insertInto('sessions')
+      .values({
+        id: uuidv7(),
+        user_id: userId,
+        token,
+        expires_at: expiresAt.getTime()
+      })
+      .execute()
 
     return token
   },
@@ -117,9 +118,11 @@ export const authService = {
     }
 
     // Check if user already exists
-    const existingUser = await getDb().query.users.findFirst({
-      where: eq(users.email, input.email)
-    })
+    const existingUser = await getDb()
+      .selectFrom('users')
+      .selectAll()
+      .where('users.email', '=', input.email)
+      .executeTakeFirst()
 
     if (existingUser) {
       throw new Error('Email already registered')
@@ -129,15 +132,21 @@ export const authService = {
     const hashedPassword = await this.hashPassword(input.password)
 
     // Create user
-    const [newUser] = await getDb()
-      .insert(users)
+    const newUser = await getDb()
+      .insertInto('users')
       .values({
         id: uuidv7(),
         name: input.name,
         email: input.email,
-        password: hashedPassword
+        password: hashedPassword,
+        role: 'user'
       })
-      .returning()
+      .returningAll()
+      .executeTakeFirst()
+
+    if (!newUser) {
+      throw new Error('Failed to create user')
+    }
 
     // Create session
     const token = await this.createSession(newUser.id)
@@ -164,9 +173,11 @@ export const authService = {
     }
 
     // Find user by email
-    const user = await getDb().query.users.findFirst({
-      where: eq(users.email, input.email)
-    })
+    const user = await getDb()
+      .selectFrom('users')
+      .selectAll()
+      .where('email', '=', input.email)
+      .executeTakeFirst()
 
     if (!user) {
       throw new Error('Invalid credentials')
@@ -203,9 +214,11 @@ export const authService = {
     const googleUser = await getGoogleUserInfo(access_token)
 
     // Check if user already exists
-    const existingUser = await getDb().query.users.findFirst({
-      where: eq(users.email, googleUser.email.toLowerCase())
-    })
+    const existingUser = await getDb()
+      .selectFrom('users')
+      .selectAll()
+      .where('users.email', '=', googleUser.email.toLowerCase())
+      .executeTakeFirst()
 
     if (existingUser) {
       // Create session for existing user
@@ -224,8 +237,8 @@ export const authService = {
     // Create new user
     const randomPassword = uuidv7().replace(/-/g, '')
     const hashedPassword = await this.hashPassword(randomPassword)
-    const [newUser] = await getDb()
-      .insert(users)
+    const newUser = await getDb()
+      .insertInto('users')
       .values({
         id: uuidv7(),
         name: googleUser.name,
@@ -233,7 +246,12 @@ export const authService = {
         password: hashedPassword,
         role: 'user'
       })
-      .returning()
+      .returningAll()
+      .executeTakeFirst()
+
+    if (!newUser) {
+      throw new Error('Failed to create user')
+    }
 
     // Create session for new user
     const token = await this.createSession(newUser.id)
@@ -252,7 +270,10 @@ export const authService = {
    * Logout user
    */
   async logout(token: string): Promise<void> {
-    await getDb().delete(sessions).where(eq(sessions.token, token))
+    await getDb()
+      .deleteFrom('sessions')
+      .where('token', '=', token)
+      .execute()
   },
 
   /**
@@ -261,9 +282,11 @@ export const authService = {
    */
   async impersonate(userId: string): Promise<AuthResult> {
     // Find user
-    const user = await getDb().query.users.findFirst({
-      where: eq(users.id, userId)
-    })
+    const user = await getDb()
+      .selectFrom('users')
+      .selectAll()
+      .where('users.id', '=', userId)
+      .executeTakeFirst()
 
     if (!user) {
       throw new Error('User not found')
@@ -292,9 +315,11 @@ export const authService = {
       throw new Error('Too many password reset attempts. Please try again later.')
     }
 
-    const user = await getDb().query.users.findFirst({
-      where: eq(users.email, email)
-    })
+    const user = await getDb()
+      .selectFrom('users')
+      .selectAll()
+      .where('users.email', '=', email)
+      .executeTakeFirst()
 
     if (!user) {
       // Don't reveal if user exists or not for security
@@ -302,19 +327,25 @@ export const authService = {
     }
 
     // Delete any existing reset tokens for this user
-    await getDb().delete(passwordResetTokens).where(eq(passwordResetTokens.userId, user.id))
+    await getDb()
+      .deleteFrom('password_reset_tokens')
+      .where('user_id', '=', user.id)
+      .execute()
 
     // Create new reset token
-    const token = Bun.randomUUIDv7()
+    const token = uuidv7()
     const expiresAt = new Date()
     expiresAt.setHours(expiresAt.getHours() + 1) // 1 hour expiry
 
-    await getDb().insert(passwordResetTokens).values({
-      id: Bun.randomUUIDv7(),
-      userId: user.id,
-      token,
-      expiresAt
-    })
+    await getDb()
+      .insertInto('password_reset_tokens')
+      .values({
+        id: uuidv7(),
+        user_id: user.id,
+        token,
+        expires_at: expiresAt.getTime()
+      })
+      .execute()
 
     // Send email with reset link
     const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${token}`
@@ -339,12 +370,12 @@ export const authService = {
   async resetPassword(token: string, newPassword: string): Promise<void> {
     // Find valid reset token
     const now = new Date()
-    const resetToken = await getDb().query.passwordResetTokens.findFirst({
-      where: and(
-        eq(passwordResetTokens.token, token),
-        gt(passwordResetTokens.expiresAt, now)
-      )
-    })
+    const resetToken = await getDb()
+      .selectFrom('password_reset_tokens')
+      .selectAll()
+      .where('token', '=', token)
+      .where('expires_at', '>', now.getTime())
+      .executeTakeFirst()
 
     if (!resetToken) {
       throw new Error('Invalid or expired reset token')
@@ -355,12 +386,16 @@ export const authService = {
 
     // Update user password
     await getDb()
-      .update(users)
+      .updateTable('users')
       .set({ password: hashedPassword })
-      .where(eq(users.id, resetToken.userId))
+      .where('id', '=', resetToken.user_id)
+      .execute()
 
     // Delete the used token
-    await getDb().delete(passwordResetTokens).where(eq(passwordResetTokens.id, resetToken.id))
+    await getDb()
+      .deleteFrom('password_reset_tokens')
+      .where('id', '=', resetToken.id)
+      .execute()
   },
 
   /**
@@ -369,27 +404,31 @@ export const authService = {
   async getSessionUser(token: string): Promise<AuthUser | null> {
     if (!token) return null
 
-    const session = await getDb().query.sessions.findFirst({
-      where: eq(sessions.token, token),
-      with: {
-        user: true
-      }
-    })
+    const session = await getDb()
+      .selectFrom('sessions')
+      .innerJoin('users', (join) => 
+        join.on('sessions.user_id', '=', 'users.id')
+      )
+      .where('sessions.token', '=', token)
+      .selectAll()
+      .executeTakeFirst()
 
     if (!session) return null
 
     // Check if session is expired
-    if (new Date(session.expiresAt) < new Date()) {
-      await getDb().delete(sessions).where(eq(sessions.token, token))
+    if (new Date(session.expires_at) < new Date()) {
+      await getDb()
+        .deleteFrom('sessions')
+        .where('token', '=', token)
+        .execute()
       return null
     }
 
-    const user = session.user as { id: string; name: string; email: string; role: string }
     return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role
+      id: session.id,
+      name: session.name,
+      email: session.email,
+      role: session.role
     }
   },
 
